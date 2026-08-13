@@ -81,3 +81,33 @@ Git Add
 Git Commit
      ↓
 Git Push
+
+# ⚠️ Important Things to Know
+
+Before using Geetlit, it is important to understand what it actually automates.
+
+### 🚀 Geetlit Automates the GitHub Commit & Push Process
+
+Once GitHub is configured, you do **not** need to manually:
+
+- Create the Markdown file
+- Run `git add`
+- Run `git commit`
+- Run `git push`
+
+Geetlit handles the GitHub file creation and commit operation automatically through the GitHub API.
+
+The basic workflow is:
+
+```text
+Solve a problem on LeetCode
+          ↓
+Enter the problem number/title in Geetlit
+          ↓
+Geetlit creates the log file
+          ↓
+Geetlit sends it to GitHub
+          ↓
+GitHub commit is created
+          ↓
+Your repository is updated
