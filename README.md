@@ -103,5 +103,5 @@ Stop fighting with your terminal and start focusing on the code.
 ---
 
 <p align="center">
-  Made with ❤️ for the LeetCode Community
+  Made by Saket Saurabh 
 </p>
