@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.png" width="220" alt="Geetlit Logo">
+</p>
+
 # <p align="center">🚀 Geetlit</p>
 
 <p align="center">
