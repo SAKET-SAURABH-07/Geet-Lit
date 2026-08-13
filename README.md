@@ -1,113 +1,44 @@
-# Geetlit
+# 🚀 Geetlit
 
-> A lightweight LeetCode progress logger that lets you record solved problems and sync their basic metadata to a GitHub repository.
+> A lightweight, browser-based LeetCode progress logger that automatically records your solved problems and syncs their metadata directly to a configured GitHub repository.
 
-Geetlit is a small browser-based utility built to make maintaining a GitHub-based LeetCode solving log easier.
-
-Instead of manually creating a Markdown file and committing it every time you solve a problem, you can enter the problem number and title, and Geetlit can create a small Markdown log and push it to your configured GitHub repository.
-
-It also includes a bulk import feature for adding problems that you solved before using Geetlit.
+Maintaining a GitHub-based LeetCode solving log manually can be tedious and repetitive. Geetlit eliminates the friction of creating Markdown files, formatting them, and committing them via the command line. Simply enter the problem number and title, and Geetlit will generate the log and push it to GitHub for you.
 
 ---
 
 ## ✨ Features
 
-- 📝 **Log solved LeetCode problems**
-  - Add a problem number
-  - Optionally add the problem title
-  - Record the date and time
-
-- 🚀 **GitHub synchronization**
-  - Push logged problems directly to GitHub
-  - Creates a Markdown file for each problem
-  - Tracks whether an entry has been synchronized successfully
-
-- 📁 **Custom GitHub configuration**
-  - Choose GitHub username/organization
-  - Choose repository
-  - Choose branch
-  - Choose folder/path for your logs
-
-- 🔄 **Bulk import**
-  - Import previously solved problems
-  - Useful when starting Geetlit with an existing LeetCode history
-
-- 📦 **Two import modes**
-  - Combine imported problems into one Markdown file and commit
-  - Create a separate Markdown file and commit for each problem
-
-- 📊 **Sync status tracking**
-  - Pending
-  - Synced
-  - Failed
-
-- 💾 **Browser-based storage**
-  - Problem logs and configuration are stored locally in the browser
-  - No external database is required
-
-- 🌐 **No installation required**
-  - Runs directly in the browser
-  - No backend server is required for the current version
+*   **📝 Effortless Logging:** Quickly add problem numbers, optional titles, and record the exact date and time of completion.
+*   **🚀 Direct GitHub Synchronization:** Push logged problems directly to GitHub via the GitHub API, automatically generating a beautifully formatted Markdown file for each entry.
+*   **📁 Fully Customizable Configuration:** Define your target GitHub username or organization, specific repository, branch, and folder path. 
+*   **🔄 Flexible Bulk Import:** Easily transition your existing LeetCode history into Geetlit. Choose between combining all imported problems into a single commit or creating separate Markdown files for each problem.
+*   **📊 Visual Status Tracking:** Keep track of your syncing progress with intuitive status indicators: Synced (green), Pending (amber), and Error (red).
+*   **💾 Secure Local Storage:** All problem logs and configurations are stored entirely locally in your browser—no external databases or backend servers are required.
+*   **✨ Animated UI Experience:** The interface features clean CSS animations, such as a blinking terminal-style caret in the header, smooth button scaling on click, and responsive toast notifications.
 
 ---
 
-# 🎯 Why Geetlit?
+## 🎯 Why Geetlit?
 
-Maintaining a LeetCode GitHub repository manually can become repetitive.
+Without automation, updating your repository for every solved problem is a repetitive, multi-step chore. Geetlit reduces this entire workflow down to a single step.
 
-For every problem, you may have to:
+| Without Geetlit (Manual Workflow) | With Geetlit (Automated Workflow) |
+| :--- | :--- |
+| 1. Solve Problem | 1. Solve Problem |
+| 2. Create Markdown File | **2. Enter Problem Number in Geetlit** |
+| 3. Write Problem Information | *Geetlit automatically creates the file* |
+| 4. Save File to Correct Folder | *Geetlit formats the information* |
+| 5. Run `git add .` | *Geetlit pushes to your GitHub repo* |
+| 6. Run `git commit -m "..."` | |
+| 7. Run `git push` | |
 
-1. Create a file
-2. Add the problem information
-3. Put it in the correct folder
-4. Commit the change
-5. Push it to GitHub
+---
 
-Geetlit reduces this repetitive process.
+## ⚠️ Important Things to Know & Cautions
 
-### Without Geetlit
+Before diving into Geetlit, please keep the following operational details and constraints in mind to ensure you don't lose any data:
 
-```text
-Solve Problem
-     ↓
-Create Markdown File
-     ↓
-Write Problem Information
-     ↓
-Save File
-     ↓
-Git Add
-     ↓
-Git Commit
-     ↓
-Git Push
-
-# ⚠️ Important Things to Know
-
-Before using Geetlit, it is important to understand what it actually automates.
-
-### 🚀 Geetlit Automates the GitHub Commit & Push Process
-
-Once GitHub is configured, you do **not** need to manually:
-
-- Create the Markdown file
-- Run `git add`
-- Run `git commit`
-- Run `git push`
-
-Geetlit handles the GitHub file creation and commit operation automatically through the GitHub API.
-
-The basic workflow is:
-
-```text
-Solve a problem on LeetCode
-          ↓
-Enter the problem number/title in Geetlit
-          ↓
-Geetlit creates the log file
-          ↓
-Geetlit sends it to GitHub
-          ↓
-GitHub commit is created
-          ↓
-Your repository is updated
+*   **Automated Git Operations:** Geetlit handles the entire file creation and commit operation automatically through the GitHub API. Once configured, you do **not** need to manually run `git add`, `git commit`, or `git push`.
+*   **Local Storage Dependency:** Because Geetlit runs entirely in the browser without a backend server, your un-synced logs and configurations are stored in your local browser cache. **Caution:** Clearing your browser's site data or cache will permanently delete any locally stored configurations and pending logs.
+*   **Configuration Validation:** When setting up your repository path, pay attention to the real-time URL preview and verification messages. A green validation message indicates a correct setup, while a red message means your path or repository details need fixing.
+*   **Monitor Your Sync Status:** Always check the toast notifications that pop up at the bottom of the screen. If a sync fails (indicated by a red status dot), the log remains in your pending list so you can try pushing it again.
