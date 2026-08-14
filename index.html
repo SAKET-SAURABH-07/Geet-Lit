@@ -161,6 +161,21 @@
   .verify-msg.ok{color:var(--green);}
   .verify-msg.err{color:var(--red);}
   .verify-msg.pending{color:var(--text-dim);}
+  .sync-bar{
+    display:none;align-items:center;justify-content:space-between;gap:10px;
+    margin-top:12px;padding:10px 12px;
+    background:var(--green-dim);border:1px solid rgba(63,185,80,0.35);border-radius:5px;
+  }
+  .sync-bar.show{display:flex;}
+  .sync-bar .sync-text{font-size:11.5px;color:var(--green);line-height:1.5;}
+  .sync-bar .sync-btn{
+    flex-shrink:0;background:transparent;border:1px solid rgba(63,185,80,0.5);color:var(--green);
+    font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:600;
+    padding:6px 12px;border-radius:5px;cursor:pointer;transition:opacity .15s, transform .05s;
+  }
+  .sync-bar .sync-btn:hover{opacity:0.8;}
+  .sync-bar .sync-btn:active{transform:scale(0.98);}
+  .sync-bar .sync-btn:disabled{opacity:0.4;cursor:not-allowed;}
   .hint-trigger{
     display:inline-flex;align-items:center;justify-content:center;
     width:13px;height:13px;border-radius:50%;border:1px solid var(--border);
@@ -430,6 +445,10 @@
         Owner and repo must match the URL exactly — <b>github.com/OWNER/REPO</b> — case-sensitive, no extra slashes. Use a <b>fine-grained token</b> scoped only to this repo with "Contents: Read and write". Don't have one? <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">Create one on GitHub →</a> then set "Repository access" to this repo and grant "Contents: Read and write" under permissions. The token is saved to this browser's storage for your account only, never shared, but treat it like a password.
       </div>
       <div class="verify-msg" id="verifyMsg"></div>
+      <div class="sync-bar" id="syncBar">
+        <span class="sync-text" id="syncText">Pull entries logged from another device.</span>
+        <button class="sync-btn" id="syncBtn">sync now</button>
+      </div>
       <div class="config-actions">
         <button class="btn btn-primary" id="cfgSave">verify &amp; save</button>
         <button class="btn btn-ghost" id="cfgClear">clear</button>
@@ -616,6 +635,7 @@ async function loadAll(){
     const msg = $('verifyMsg');
     msg.className = 'verify-msg ok';
     msg.textContent = `Connected to ${config.owner}/${config.repo} (branch: ${config.branch}).`;
+    showSyncBar();
   }
   updateCfgDot();
   render();
@@ -633,6 +653,109 @@ async function saveProblems(){
 
 function updateCfgDot(){
   $('cfgDot').className = 'cfg-dot' + (config.verified ? ' on' : '');
+}
+
+function showSyncBar(){
+  $('syncBar').classList.add('show');
+}
+function hideSyncBar(){
+  $('syncBar').classList.remove('show');
+}
+
+// Pulls .md files from the configured GitHub folder that aren't in the local log yet.
+// Matches files named exactly "<number>.md" — ignores bulk import files and anything else.
+// Titles can't be recovered from GitHub (the files only store number/date/time), so
+// synced-in entries show as "untitled". Never overwrites or deletes existing local entries.
+async function syncFromGitHub(auto){
+  if(!config.verified || !config.owner || !config.repo || !config.token){
+    if(!auto) showToast('Set up and verify GitHub config first.', 'err');
+    return;
+  }
+
+  const syncBtn = $('syncBtn');
+  const syncText = $('syncText');
+  if(syncBtn) syncBtn.disabled = true;
+  if(syncText) syncText.textContent = 'Syncing…';
+  showSyncBar();
+
+  const path = (config.path || '').trim().replace(/\/+$/,'');
+  const listUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${path}?ref=${encodeURIComponent(config.branch||'main')}`;
+  const headers = {
+    'Authorization': `Bearer ${config.token}`,
+    'Accept': 'application/vnd.github+json'
+  };
+
+  try{
+    const res = await fetch(listUrl, { headers });
+    if(res.status === 404){
+      if(syncText) syncText.textContent = 'Nothing to pull yet — that folder doesn\'t exist on GitHub.';
+      if(!auto) showToast('No files found at that path yet.', null);
+      return;
+    }
+    if(!res.ok){
+      const err = await res.json().catch(()=>({}));
+      throw new Error(explainGitHubError(res.status, err.message));
+    }
+    const listing = await res.json();
+    if(!Array.isArray(listing)){
+      throw new Error('That path points to a file, not a folder.');
+    }
+
+    const existingNumbers = new Set(problems.map(p=>p.number));
+    const candidates = listing
+      .filter(f => f.type === 'file' && /^\d+\.md$/.test(f.name))
+      .filter(f => !existingNumbers.has(f.name.replace(/\.md$/,'')));
+
+    if(candidates.length === 0){
+      if(syncText) syncText.textContent = 'Up to date — nothing new to pull.';
+      if(!auto) showToast('Already up to date.', 'ok');
+      return;
+    }
+
+    let added = 0;
+    for(const file of candidates){
+      const number = file.name.replace(/\.md$/,'');
+      const filePath = `${path ? path + '/' : ''}${file.name}`;
+      let date = nowParts().date, time = nowParts().time;
+      try{
+        const commitsUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/commits?path=${encodeURIComponent(filePath)}&sha=${encodeURIComponent(config.branch||'main')}&per_page=1`;
+        const cRes = await fetch(commitsUrl, { headers });
+        if(cRes.ok){
+          const commits = await cRes.json();
+          const iso = commits && commits[0] && commits[0].commit && commits[0].commit.author && commits[0].commit.author.date;
+          if(iso){
+            const d = new Date(iso);
+            date = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+            time = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+          }
+        }
+      }catch(e){
+        console.error(`sync: could not fetch commit date for ${file.name}`, e);
+      }
+
+      problems.push({
+        id: `${number}-${Date.now()}-${added}`,
+        number, title:'', date, time,
+        synced:true, error:null
+      });
+      existingNumbers.add(number);
+      added++;
+    }
+
+    await saveProblems();
+    render();
+
+    const summary = `Pulled ${added} new ${added===1?'entry':'entries'} from GitHub.`;
+    if(syncText) syncText.textContent = summary;
+    if(!auto) showToast(summary, 'ok');
+    else showToast(summary, 'ok');
+  }catch(e){
+    console.error('syncFromGitHub failed:', e);
+    if(syncText) syncText.textContent = `Sync failed: ${e.message}`;
+    if(!auto) showToast(`Sync failed: ${e.message}`, 'err');
+  }finally{
+    if(syncBtn) syncBtn.disabled = false;
+  }
 }
 
 function updateUrlPreview(){
@@ -1191,7 +1314,17 @@ $('cfgSave').addEventListener('click', async ()=>{
     showToast(`Could not save config: ${e.message || 'unknown error'}.`, 'err');
   }
   updateCfgDot();
+
+  if(verified){
+    showSyncBar();
+    if(problems.length === 0){
+      // likely a new device with nothing logged locally yet — pull automatically
+      syncFromGitHub(true);
+    }
+  }
 });
+
+$('syncBtn').addEventListener('click', ()=> syncFromGitHub(false));
 
 $('cfgClear').addEventListener('click', async ()=>{
   config = { owner:'', repo:'', branch:'main', path:'leetcode', token:'', verified:false };
@@ -1199,6 +1332,7 @@ $('cfgClear').addEventListener('click', async ()=>{
   $('cfgPath').value='leetcode'; $('cfgToken').value='';
   $('verifyMsg').textContent=''; $('verifyMsg').className='verify-msg';
   updateUrlPreview();
+  hideSyncBar();
   try{ await storageAdapter.delete('gh-config'); }catch(e){}
   updateCfgDot();
   showToast('Config cleared.', null);
