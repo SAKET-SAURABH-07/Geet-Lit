@@ -162,12 +162,11 @@
   .verify-msg.err{color:var(--red);}
   .verify-msg.pending{color:var(--text-dim);}
   .sync-bar{
-    display:none;flex-direction:column;gap:8px;
+    display:none;align-items:center;justify-content:space-between;gap:10px;
     margin-top:12px;padding:10px 12px;
     background:var(--green-dim);border:1px solid rgba(63,185,80,0.35);border-radius:5px;
   }
   .sync-bar.show{display:flex;}
-  .sync-bar-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
   .sync-bar .sync-text{font-size:11.5px;color:var(--green);line-height:1.5;}
   .sync-bar .sync-btn{
     flex-shrink:0;background:transparent;border:1px solid rgba(63,185,80,0.5);color:var(--green);
@@ -177,15 +176,6 @@
   .sync-bar .sync-btn:hover{opacity:0.8;}
   .sync-bar .sync-btn:active{transform:scale(0.98);}
   .sync-bar .sync-btn:disabled{opacity:0.4;cursor:not-allowed;}
-  .sync-progress-track{
-    display:none;height:4px;border-radius:2px;overflow:hidden;
-    background:rgba(63,185,80,0.15);
-  }
-  .sync-progress-track.show{display:block;}
-  .sync-progress-fill{
-    height:100%;width:0%;background:var(--green);border-radius:2px;
-    transition:width .25s ease;
-  }
   .hint-trigger{
     display:inline-flex;align-items:center;justify-content:center;
     width:13px;height:13px;border-radius:50%;border:1px solid var(--border);
@@ -456,13 +446,8 @@
       </div>
       <div class="verify-msg" id="verifyMsg"></div>
       <div class="sync-bar" id="syncBar">
-        <div class="sync-bar-row">
-          <span class="sync-text" id="syncText">Pull entries logged from another device.</span>
-          <button class="sync-btn" id="syncBtn">sync now</button>
-        </div>
-        <div class="sync-progress-track" id="syncProgressTrack">
-          <div class="sync-progress-fill" id="syncProgressFill"></div>
-        </div>
+        <span class="sync-text" id="syncText">Auto-syncs on load and when you return to this tab — click to pull now.</span>
+        <button class="sync-btn" id="syncBtn">sync now</button>
       </div>
       <div class="config-actions">
         <button class="btn btn-primary" id="cfgSave">verify &amp; save</button>
@@ -561,6 +546,19 @@ let problems = [];
 let config = { owner:'', repo:'', branch:'main', path:'leetcode', token:'' };
 let storageBackend = 'none'; // 'claude' | 'local' | 'none'
 let searchQuery = ''; // current search filter (problem number string)
+let lastAutoSync = 0;
+const AUTO_SYNC_MIN_INTERVAL_MS = 20000; // don't auto-sync more than once per 20s
+
+// Runs a background sync, but only if we're verified and enough time has
+// passed since the last auto-sync (avoids hammering the GitHub API on rapid
+// focus/blur or multiple tabs).
+function maybeAutoSync(){
+  if(!config.verified || !config.owner || !config.repo || !config.token) return;
+  const now = Date.now();
+  if(now - lastAutoSync < AUTO_SYNC_MIN_INTERVAL_MS) return;
+  lastAutoSync = now;
+  syncFromGitHub(true);
+}
 
 const storageAdapter = {
   async get(key){
@@ -654,6 +652,9 @@ async function loadAll(){
   }
   updateCfgDot();
   render();
+
+  // pull in anything pushed from other devices, every time the page loads
+  maybeAutoSync();
 }
 
 async function saveProblems(){
@@ -676,17 +677,6 @@ function showSyncBar(){
 function hideSyncBar(){
   $('syncBar').classList.remove('show');
 }
-function setSyncProgress(pct){
-  const track = $('syncProgressTrack');
-  const fill = $('syncProgressFill');
-  if(pct === null){
-    track.classList.remove('show');
-    fill.style.width = '0%';
-    return;
-  }
-  track.classList.add('show');
-  fill.style.width = `${Math.max(0, Math.min(100, pct))}%`;
-}
 
 // Pulls .md files from the configured GitHub folder that aren't in the local log yet.
 // Matches files named exactly "<number>.md" — ignores bulk import files and anything else.
@@ -701,9 +691,8 @@ async function syncFromGitHub(auto){
   const syncBtn = $('syncBtn');
   const syncText = $('syncText');
   if(syncBtn) syncBtn.disabled = true;
-  if(syncText) syncText.textContent = 'Checking for new entries…';
+  if(syncText) syncText.textContent = 'Syncing…';
   showSyncBar();
-  setSyncProgress(0);
 
   const path = (config.path || '').trim().replace(/\/+$/,'');
   const listUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${path}?ref=${encodeURIComponent(config.branch||'main')}`;
@@ -717,7 +706,6 @@ async function syncFromGitHub(auto){
     if(res.status === 404){
       if(syncText) syncText.textContent = 'Nothing to pull yet — that folder doesn\'t exist on GitHub.';
       if(!auto) showToast('No files found at that path yet.', null);
-      setSyncProgress(null);
       return;
     }
     if(!res.ok){
@@ -737,21 +725,14 @@ async function syncFromGitHub(auto){
     if(candidates.length === 0){
       if(syncText) syncText.textContent = 'Up to date — nothing new to pull.';
       if(!auto) showToast('Already up to date.', 'ok');
-      setSyncProgress(null);
       return;
     }
 
     let added = 0;
-    const total = candidates.length;
     for(const file of candidates){
       const number = file.name.replace(/\.md$/,'');
       const filePath = `${path ? path + '/' : ''}${file.name}`;
       let date = nowParts().date, time = nowParts().time;
-
-      const pct = Math.round((added / total) * 100);
-      if(syncText) syncText.textContent = `Syncing… ${added}/${total} (${pct}%)`;
-      setSyncProgress(pct);
-
       try{
         const commitsUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/commits?path=${encodeURIComponent(filePath)}&sha=${encodeURIComponent(config.branch||'main')}&per_page=1`;
         const cRes = await fetch(commitsUrl, { headers });
@@ -775,27 +756,21 @@ async function syncFromGitHub(auto){
       });
       existingNumbers.add(number);
       added++;
-
-      // update after each completed file too, so the bar moves smoothly rather than jumping
-      const donePct = Math.round((added / total) * 100);
-      if(syncText) syncText.textContent = `Syncing… ${added}/${total} (${donePct}%)`;
-      setSyncProgress(donePct);
-
-      // persist incrementally so a mid-sync failure doesn't lose already-pulled entries
-      await saveProblems();
-      render();
     }
+
+    await saveProblems();
+    render();
 
     const summary = `Pulled ${added} new ${added===1?'entry':'entries'} from GitHub.`;
     if(syncText) syncText.textContent = summary;
-    showToast(summary, 'ok');
+    if(!auto) showToast(summary, 'ok');
+    else showToast(summary, 'ok');
   }catch(e){
     console.error('syncFromGitHub failed:', e);
     if(syncText) syncText.textContent = `Sync failed: ${e.message}`;
     if(!auto) showToast(`Sync failed: ${e.message}`, 'err');
   }finally{
     if(syncBtn) syncBtn.disabled = false;
-    setTimeout(()=> setSyncProgress(null), 900);
   }
 }
 
@@ -1358,10 +1333,10 @@ $('cfgSave').addEventListener('click', async ()=>{
 
   if(verified){
     showSyncBar();
-    if(problems.length === 0){
-      // likely a new device with nothing logged locally yet — pull automatically
-      syncFromGitHub(true);
-    }
+    // pull immediately after (re)connecting, regardless of whether this
+    // device already has entries — another device may have pushed since
+    lastAutoSync = Date.now();
+    syncFromGitHub(true);
   }
 });
 
@@ -1392,6 +1367,13 @@ $('cfgClear').addEventListener('click', async ()=>{
     $('storageNotice').style.display = 'block';
   }
   loadAll();
+
+  // re-check GitHub whenever this tab regains focus — this is what catches
+  // entries pushed from another device while this tab was in the background
+  window.addEventListener('focus', maybeAutoSync);
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState === 'visible') maybeAutoSync();
+  });
 })();
 </script>
 </body>
