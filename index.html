@@ -446,7 +446,7 @@
       </div>
       <div class="verify-msg" id="verifyMsg"></div>
       <div class="sync-bar" id="syncBar">
-        <span class="sync-text" id="syncText">Auto-syncs on load and when you return to this tab — click to pull now.</span>
+        <span class="sync-text" id="syncText">Checks GitHub on load and when you return to this tab — click "sync now" to pull in what's found.</span>
         <button class="sync-btn" id="syncBtn">sync now</button>
       </div>
       <div class="config-actions">
@@ -547,17 +547,21 @@ let config = { owner:'', repo:'', branch:'main', path:'leetcode', token:'' };
 let storageBackend = 'none'; // 'claude' | 'local' | 'none'
 let searchQuery = ''; // current search filter (problem number string)
 let lastAutoSync = 0;
-const AUTO_SYNC_MIN_INTERVAL_MS = 20000; // don't auto-sync more than once per 20s
+const AUTO_SYNC_MIN_INTERVAL_MS = 20000; // don't auto-check more than once per 20s
+// Cache of candidate files from the last check — null means "unknown, need to check",
+// [] means "checked, nothing new". This is what the sync button actually pulls.
+let pendingSyncCandidates = null;
 
-// Runs a background sync, but only if we're verified and enough time has
-// passed since the last auto-sync (avoids hammering the GitHub API on rapid
-// focus/blur or multiple tabs).
+// Runs a background check for new entries, but only if we're verified and enough
+// time has passed since the last check (avoids hammering the GitHub API on rapid
+// focus/blur or multiple tabs). Never pulls anything in on its own — just updates
+// the sync bar so the user can see what's new and choose when to pull it in.
 function maybeAutoSync(){
   if(!config.verified || !config.owner || !config.repo || !config.token) return;
   const now = Date.now();
   if(now - lastAutoSync < AUTO_SYNC_MIN_INTERVAL_MS) return;
   lastAutoSync = now;
-  syncFromGitHub(true);
+  checkForUpdates(true);
 }
 
 const storageAdapter = {
@@ -653,7 +657,8 @@ async function loadAll(){
   updateCfgDot();
   render();
 
-  // pull in anything pushed from other devices, every time the page loads
+  // check for anything pushed from other devices, every time the page loads —
+  // this only surfaces a count on the sync bar, it never pulls automatically
   maybeAutoSync();
 }
 
@@ -678,21 +683,47 @@ function hideSyncBar(){
   $('syncBar').classList.remove('show');
 }
 
-// Pulls .md files from the configured GitHub folder that aren't in the local log yet.
-// Matches files named exactly "<number>.md" — ignores bulk import files and anything else.
-// Titles can't be recovered from GitHub (the files only store number/date/time), so
-// synced-in entries show as "untitled". Never overwrites or deletes existing local entries.
-async function syncFromGitHub(auto){
-  if(!config.verified || !config.owner || !config.repo || !config.token){
-    if(!auto) showToast('Set up and verify GitHub config first.', 'err');
-    return;
-  }
-
+// Drives the sync bar's text/button state. Called by checkForUpdates and
+// syncFromGitHub — never touches `problems` itself.
+function setSyncBar(state, extra){
   const syncBtn = $('syncBtn');
   const syncText = $('syncText');
-  if(syncBtn) syncBtn.disabled = true;
-  if(syncText) syncText.textContent = 'Syncing…';
+  switch(state){
+    case 'checking':
+      syncText.textContent = 'Checking GitHub for new entries…';
+      syncBtn.disabled = true;
+      break;
+    case 'found':
+      syncText.textContent = `${extra} new problem${extra===1?'':'s'} found on GitHub — sync now to pull ${extra===1?'it':'them'} in.`;
+      syncBtn.disabled = false;
+      break;
+    case 'uptodate':
+      syncText.textContent = 'Up to date — nothing new on GitHub.';
+      syncBtn.disabled = true;
+      break;
+    case 'syncing':
+      syncText.textContent = 'Pulling new entries…';
+      syncBtn.disabled = true;
+      break;
+    case 'synced':
+      syncText.textContent = extra;
+      syncBtn.disabled = true;
+      break;
+    case 'error':
+      syncText.textContent = extra;
+      syncBtn.disabled = false; // let them retry by clicking sync
+      break;
+  }
   showSyncBar();
+}
+
+// Lightweight check: lists the configured GitHub folder and figures out which
+// .md files aren't in the local log yet, but does NOT pull anything in. Just
+// updates the sync bar with a count so the user can see what's new and decide
+// when to pull it in via the "sync now" button.
+async function checkForUpdates(auto){
+  if(!config.verified || !config.owner || !config.repo || !config.token) return;
+  setSyncBar('checking');
 
   const path = (config.path || '').trim().replace(/\/+$/,'');
   const listUrl = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${path}?ref=${encodeURIComponent(config.branch||'main')}`;
@@ -704,7 +735,8 @@ async function syncFromGitHub(auto){
   try{
     const res = await fetch(listUrl, { headers });
     if(res.status === 404){
-      if(syncText) syncText.textContent = 'Nothing to pull yet — that folder doesn\'t exist on GitHub.';
+      pendingSyncCandidates = [];
+      setSyncBar('uptodate');
       if(!auto) showToast('No files found at that path yet.', null);
       return;
     }
@@ -722,15 +754,59 @@ async function syncFromGitHub(auto){
       .filter(f => f.type === 'file' && /^\d+\.md$/.test(f.name))
       .filter(f => !existingNumbers.has(f.name.replace(/\.md$/,'')));
 
+    pendingSyncCandidates = candidates;
     if(candidates.length === 0){
-      if(syncText) syncText.textContent = 'Up to date — nothing new to pull.';
+      setSyncBar('uptodate');
       if(!auto) showToast('Already up to date.', 'ok');
-      return;
+    } else {
+      setSyncBar('found', candidates.length);
+      if(!auto) showToast(`${candidates.length} new ${candidates.length===1?'entry':'entries'} found on GitHub.`, null);
     }
+  }catch(e){
+    console.error('checkForUpdates failed:', e);
+    pendingSyncCandidates = null;
+    setSyncBar('error', `Check failed: ${e.message}`);
+    if(!auto) showToast(`Check failed: ${e.message}`, 'err');
+  }
+}
 
+// Pulls in whatever checkForUpdates last found (re-checking first if we don't have
+// a cached list yet). Matches files named exactly "<number>.md" — ignores bulk
+// import files and anything else. Titles can't be recovered from GitHub (the files
+// only store number/date/time), so synced-in entries show as "untitled". Never
+// overwrites or deletes existing local entries. Always user-triggered, via the
+// "sync now" button.
+async function syncFromGitHub(){
+  if(!config.verified || !config.owner || !config.repo || !config.token){
+    showToast('Set up and verify GitHub config first.', 'err');
+    return;
+  }
+
+  if(pendingSyncCandidates === null){
+    await checkForUpdates(true);
+  }
+  const candidates = pendingSyncCandidates || [];
+  if(candidates.length === 0){
+    setSyncBar('uptodate');
+    showToast('Already up to date.', 'ok');
+    return;
+  }
+
+  setSyncBar('syncing');
+
+  const path = (config.path || '').trim().replace(/\/+$/,'');
+  const headers = {
+    'Authorization': `Bearer ${config.token}`,
+    'Accept': 'application/vnd.github+json'
+  };
+
+  try{
+    const existingNumbers = new Set(problems.map(p=>p.number));
     let added = 0;
     for(const file of candidates){
       const number = file.name.replace(/\.md$/,'');
+      if(existingNumbers.has(number)) continue; // safety, in case local state changed since the check
+
       const filePath = `${path ? path + '/' : ''}${file.name}`;
       let date = nowParts().date, time = nowParts().time;
       try{
@@ -761,16 +837,14 @@ async function syncFromGitHub(auto){
     await saveProblems();
     render();
 
+    pendingSyncCandidates = [];
     const summary = `Pulled ${added} new ${added===1?'entry':'entries'} from GitHub.`;
-    if(syncText) syncText.textContent = summary;
-    if(!auto) showToast(summary, 'ok');
-    else showToast(summary, 'ok');
+    setSyncBar('synced', summary);
+    showToast(summary, 'ok');
   }catch(e){
     console.error('syncFromGitHub failed:', e);
-    if(syncText) syncText.textContent = `Sync failed: ${e.message}`;
-    if(!auto) showToast(`Sync failed: ${e.message}`, 'err');
-  }finally{
-    if(syncBtn) syncBtn.disabled = false;
+    setSyncBar('error', `Sync failed: ${e.message}`);
+    showToast(`Sync failed: ${e.message}`, 'err');
   }
 }
 
@@ -1333,14 +1407,15 @@ $('cfgSave').addEventListener('click', async ()=>{
 
   if(verified){
     showSyncBar();
-    // pull immediately after (re)connecting, regardless of whether this
-    // device already has entries — another device may have pushed since
+    // check immediately after (re)connecting, regardless of whether this
+    // device already has entries — another device may have pushed since.
+    // Doesn't pull anything in on its own; just surfaces the count.
     lastAutoSync = Date.now();
-    syncFromGitHub(true);
+    checkForUpdates(true);
   }
 });
 
-$('syncBtn').addEventListener('click', ()=> syncFromGitHub(false));
+$('syncBtn').addEventListener('click', ()=> syncFromGitHub());
 
 $('cfgClear').addEventListener('click', async ()=>{
   config = { owner:'', repo:'', branch:'main', path:'leetcode', token:'', verified:false };
@@ -1348,6 +1423,7 @@ $('cfgClear').addEventListener('click', async ()=>{
   $('cfgPath').value='leetcode'; $('cfgToken').value='';
   $('verifyMsg').textContent=''; $('verifyMsg').className='verify-msg';
   updateUrlPreview();
+  pendingSyncCandidates = null;
   hideSyncBar();
   try{ await storageAdapter.delete('gh-config'); }catch(e){}
   updateCfgDot();
