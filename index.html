@@ -279,6 +279,44 @@
     .row .title{width:100%;order:3;flex-basis:100%;white-space:normal;}
     .row .when{width:100%;order:4;flex-basis:100%;}
   }
+
+  /* search bar */
+  .search-wrap{
+    padding:10px 18px;border-bottom:1px solid var(--border-soft);
+    display:flex;align-items:center;gap:10px;
+  }
+  .search-wrap input{
+    flex:1;background:var(--bg-raise);border:1px solid var(--border);color:var(--text);
+    font-family:'JetBrains Mono',monospace;font-size:12.5px;
+    padding:7px 10px;border-radius:5px;outline:none;
+  }
+  .search-wrap input:focus{border-color:var(--green);}
+  .search-count{font-size:11px;color:var(--text-faint);white-space:nowrap;flex-shrink:0;}
+  .search-wrap .clear-search{
+    background:transparent;border:none;color:var(--text-faint);cursor:pointer;
+    font-size:16px;padding:2px 5px;line-height:1;flex-shrink:0;
+  }
+  .search-wrap .clear-search:hover{color:var(--text);}
+  .row.search-hidden{display:none;}
+
+  /* duplicate warning banner */
+  .dup-warn{
+    display:none;
+    margin-top:10px;padding:10px 14px;
+    background:rgba(217,164,65,0.08);border:1px solid var(--amber);border-radius:5px;
+    font-size:12px;color:var(--amber);line-height:1.6;
+  }
+  .dup-warn.show{display:block;}
+  .dup-warn b{color:var(--text);}
+  .dup-warn .dup-actions{display:flex;gap:8px;margin-top:8px;}
+  .dup-warn .dup-actions button{
+    font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:600;
+    padding:6px 12px;border-radius:4px;cursor:pointer;border:1px solid transparent;
+  }
+  .dup-proceed{background:var(--amber);color:#1a1200;}
+  .dup-proceed:hover{opacity:0.88;}
+  .dup-dismiss{background:transparent;border-color:var(--border) !important;color:var(--text-dim);}
+  .dup-dismiss:hover{color:var(--text);border-color:var(--text-faint) !important;}
 </style>
 </head>
 <body>
@@ -421,6 +459,13 @@
         </div>
         <button class="btn btn-primary" id="addBtn">+ log problem</button>
       </div>
+      <div class="dup-warn" id="dupWarn">
+        <span id="dupWarnText"></span>
+        <div class="dup-actions">
+          <button class="dup-proceed" id="dupProceed">log it again anyway</button>
+          <button class="dup-dismiss" id="dupDismiss">cancel</button>
+        </div>
+      </div>
       <div class="import-link" id="importToggle">already solved problems before finding this? import them in bulk →</div>
     </div>
   </div>
@@ -462,6 +507,11 @@
       <span class="label">LOG</span>
       <span class="log-meta" id="logMeta"></span>
     </div>
+    <div class="search-wrap" id="searchWrap" style="display:none;">
+      <input type="number" id="searchInput" placeholder="search by problem #…" min="1" autocomplete="off">
+      <span class="search-count" id="searchCount"></span>
+      <button class="clear-search" id="clearSearch" title="clear search">×</button>
+    </div>
     <div id="logList"></div>
   </div>
 
@@ -476,6 +526,7 @@ const $ = id => document.getElementById(id);
 let problems = [];
 let config = { owner:'', repo:'', branch:'main', path:'leetcode', token:'' };
 let storageBackend = 'none'; // 'claude' | 'local' | 'none'
+let searchQuery = ''; // current search filter (problem number string)
 
 const storageAdapter = {
   async get(key){
@@ -608,6 +659,9 @@ function render(){
     ? `${problems.length} total · ${syncedCount} synced`
     : '';
 
+  // show/hide search bar
+  $('searchWrap').style.display = problems.length ? 'flex' : 'none';
+
   if(!sorted.length){
     list.innerHTML = `<div class="empty">No problems logged yet.<br>Add one above to start the log.</div>`;
     return;
@@ -627,7 +681,9 @@ function render(){
     const titleHtml = p.title
       ? `<span class="title" title="${escapeHtml(p.title)}">${escapeHtml(p.title)}</span>`
       : `<span class="title untitled">untitled</span>`;
-    return `<div class="row">
+    // search filter: hide rows that don't match
+    const matchesSearch = !searchQuery || String(p.number).includes(searchQuery);
+    return `<div class="row${matchesSearch ? '' : ' search-hidden'}" data-number="${escapeHtml(p.number)}">
       <span class="hash">${hash}</span>
       <span class="num">${p.number}</span>
       ${titleHtml}
@@ -644,6 +700,18 @@ function render(){
   list.querySelectorAll('.del-btn').forEach(btn=>{
     btn.addEventListener('click', ()=> deleteOne(btn.dataset.del));
   });
+
+  updateSearchCount();
+}
+
+function updateSearchCount(){
+  const countEl = $('searchCount');
+  if(!searchQuery){ countEl.textContent = ''; return; }
+  const visible = document.querySelectorAll('#logList .row:not(.search-hidden)').length;
+  const total = problems.length;
+  countEl.textContent = visible === 0
+    ? 'no match'
+    : `${visible} of ${total}`;
 }
 
 function escapeHtml(s){
@@ -656,6 +724,10 @@ async function deleteOne(id){
   render();
 }
 
+function hideDupWarn(){
+  $('dupWarn').classList.remove('show');
+}
+
 async function addProblem(){
   const number = $('inNumber').value.trim();
   const title = $('inTitle').value.trim();
@@ -664,6 +736,32 @@ async function addProblem(){
   if(!number){ showToast('Enter a problem number first.', 'err'); return; }
   if(!date || !time){ showToast('Date and time are required.', 'err'); return; }
 
+  // reset date/time to NOW so any re-log uses the current moment
+  const np = nowParts();
+  $('inDate').value = np.date;
+  $('inTime').value = np.time;
+
+  // duplicate check
+  const existing = problems.filter(p => p.number === number);
+  if(existing.length > 0){
+    const latest = existing.sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time))[0];
+    const titleNote = latest.title ? ` ("${escapeHtml(latest.title)}")` : '';
+    $('dupWarnText').innerHTML =
+      `<b>Already logged:</b> Problem #${escapeHtml(number)}${titleNote} was logged on <b>${latest.date} at ${latest.time}</b>.`
+      + ` You can log it again — it'll push a new commit with today's date and time.`;
+    $('dupWarn').classList.add('show');
+    $('dupWarn').scrollIntoView({behavior:'smooth', block:'nearest'});
+    // store pending add data in closure via dataset
+    $('dupProceed').dataset.number = number;
+    $('dupProceed').dataset.title = title;
+    return;
+  }
+
+  hideDupWarn();
+  await doAddProblem(number, title, np.date, np.time);
+}
+
+async function doAddProblem(number, title, date, time){
   const entry = {
     id: `${number}-${Date.now()}`,
     number, title, date, time,
@@ -951,6 +1049,38 @@ async function pushBulk(){
 
 $('addBtn').addEventListener('click', addProblem);
 $('inNumber').addEventListener('keydown', e=>{ if(e.key==='Enter') addProblem(); });
+$('inNumber').addEventListener('input', ()=>{ hideDupWarn(); });
+
+// duplicate warning actions
+$('dupProceed').addEventListener('click', async ()=>{
+  hideDupWarn();
+  const number = $('dupProceed').dataset.number;
+  const title = $('dupProceed').dataset.title || '';
+  const np = nowParts();
+  await doAddProblem(number, title, np.date, np.time);
+});
+$('dupDismiss').addEventListener('click', ()=>{ hideDupWarn(); });
+
+// search
+$('searchInput').addEventListener('input', ()=>{
+  searchQuery = $('searchInput').value.trim();
+  // show/hide rows
+  document.querySelectorAll('#logList .row').forEach(row=>{
+    const num = row.dataset.number || '';
+    const matches = !searchQuery || num.includes(searchQuery);
+    row.classList.toggle('search-hidden', !matches);
+  });
+  $('clearSearch').style.display = searchQuery ? 'block' : 'none';
+  updateSearchCount();
+});
+$('clearSearch').addEventListener('click', ()=>{
+  $('searchInput').value = '';
+  searchQuery = '';
+  document.querySelectorAll('#logList .row.search-hidden').forEach(r=>r.classList.remove('search-hidden'));
+  $('clearSearch').style.display = 'none';
+  $('searchCount').textContent = '';
+  $('searchInput').focus();
+});
 
 $('importToggle').addEventListener('click', ()=>{
   $('importPanel').classList.add('open');
