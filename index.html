@@ -9,25 +9,26 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    /* base surfaces */
-    --bg:#0a0c09;
-    --bg-raise:#12150f;
-    --panel:#141810;
-    --panel-2:#181d13;
-    --border:rgba(190,230,110,0.10);
-    --border-soft:rgba(255,255,255,0.045);
-    --border-strong:rgba(190,230,110,0.20);
+    /* base surfaces — bold black, green as accent only (not a surface tint) */
+    --bg:#000000;
+    --bg-raise:#050505;
+    --panel:#0A0A0A;
+    --panel-2:#101010;
+    --border:rgba(140,255,80,0.22);
+    --border-soft:rgba(255,255,255,0.06);
+    --border-strong:rgba(140,255,80,0.42);
 
     /* text */
-    --text:#eef1e6;
-    --text-dim:#9aa38c;
-    --text-faint:#5c6553;
+    --text:#F3FFF1;
+    --text-dim:#9BB49B;
+    --text-faint:#58705A;
 
     /* accents */
-    --green:#a8ef4b;
-    --green-2:#7fd93a;
-    --green-dim:rgba(168,239,75,0.12);
-    --green-glow:rgba(168,239,75,0.22);
+    --green:#8CFF4A;
+    --green-2:#72FF45;
+    --lime:#A8FF55;
+    --green-dim:rgba(140,255,80,0.14);
+    --green-glow:rgba(120,255,70,0.30);
     --amber:#d9c15a;
     --amber-dim:rgba(217,193,90,0.12);
     --red:#f0756a;
@@ -39,16 +40,16 @@
     --radius-md:16px;
     --radius-sm:10px;
 
-    --shadow-card:0 20px 50px -20px rgba(0,0,0,0.55), 0 1px 0 rgba(255,255,255,0.02) inset;
-    --shadow-soft:0 10px 30px -12px rgba(0,0,0,0.5);
+    --shadow-card:0 20px 50px -20px rgba(0,0,0,0.75), 0 1px 0 rgba(255,255,255,0.02) inset;
+    --shadow-soft:0 10px 30px -12px rgba(0,0,0,0.65);
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;height:100%;}
   body{
     background:
-      radial-gradient(ellipse 65% 45% at 12% -5%, rgba(168,239,75,0.06), transparent 60%),
-      radial-gradient(ellipse 55% 55% at 100% 0%, rgba(127,217,58,0.05), transparent 60%),
-      radial-gradient(ellipse 70% 60% at 50% 110%, rgba(168,239,75,0.035), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 12% -5%, rgba(120,255,70,0.06), transparent 60%),
+      radial-gradient(ellipse 50% 50% at 100% 0%, rgba(120,255,70,0.045), transparent 60%),
+      radial-gradient(ellipse 65% 55% at 50% 110%, rgba(120,255,70,0.03), transparent 60%),
       var(--bg);
     color:var(--text);
     font-family:'JetBrains Mono', monospace;
@@ -67,7 +68,7 @@
   .sidebar{
     grid-column:1;
     grid-row:1;
-    background:linear-gradient(180deg, var(--panel), var(--bg-raise) 85%);
+    background:linear-gradient(180deg, #0A0A0A 0%, #020202 55%, #000000 100%);
     border-right:1px solid var(--border-soft);
     display:flex;
     flex-direction:column;
@@ -84,18 +85,27 @@
     overflow-y:auto;
     padding:32px 40px 64px;
     min-width:0;
+    background:
+      radial-gradient(circle at top right, rgba(80,255,70,0.06), transparent 45%),
+      radial-gradient(circle at 0% 100%, rgba(80,255,70,0.035), transparent 50%);
   }
 
   /* Brand */
-  .brand{display:flex;flex-direction:column;gap:9px;margin-bottom:22px;}
-  .brand-top{display:flex;align-items:center;gap:9px;}
-  .site-logo{width:22px;height:22px;object-fit:contain;flex-shrink:0;border-radius:6px;}
+  .brand{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;margin-bottom:26px;padding-top:6px;}
+  .brand-top{display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .site-logo{
+    width:76px;height:76px;object-fit:contain;flex-shrink:0;border-radius:18px;
+    filter:drop-shadow(0 0 18px rgba(120,255,70,0.45)) drop-shadow(0 0 40px rgba(120,255,70,0.18));
+    transition:filter .25s ease, transform .25s ease;
+  }
+  .site-logo:hover{filter:drop-shadow(0 0 24px rgba(120,255,70,0.6)) drop-shadow(0 0 54px rgba(120,255,70,0.25));transform:scale(1.03);}
   .brand .prompt{font-size:10.5px;color:var(--text-faint);letter-spacing:0.08em;}
   .brand h1{
     font-family:'Space Grotesk', sans-serif;
-    font-size:23px;font-weight:700;margin:0;
+    font-size:25px;font-weight:700;margin:0;
     letter-spacing:-0.02em;
-    display:flex;align-items:center;gap:8px;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    text-shadow:0 0 30px rgba(120,255,70,0.25);
   }
   .brand h1 .caret{
     display:inline-block;width:8px;height:19px;background:var(--green);
@@ -138,7 +148,7 @@
     color:var(--text);
     background:linear-gradient(90deg, var(--green-dim), transparent);
     border-color:var(--border-strong);
-    box-shadow:0 0 0 1px rgba(168,239,75,0.06) inset;
+    box-shadow:0 0 0 1px rgba(168,239,75,0.06) inset, inset 0 0 20px rgba(140,255,74,0.025);
   }
   .nav-item.active svg{opacity:1;color:var(--green);}
   .nav-item.active::before{
@@ -163,7 +173,9 @@
   }
   .conn-status .conn-dot{
     width:7px;height:7px;border-radius:50%;background:var(--text-faint);flex-shrink:0;
+    transition:box-shadow .2s ease;
   }
+  .conn-status:not(.on) .conn-dot{box-shadow:0 0 8px rgba(255,255,255,0.12);}
   .conn-status.on{color:var(--green);border-color:rgba(168,239,75,0.25);background:var(--green-dim);}
   .conn-status.on .conn-dot{background:var(--green);box-shadow:0 0 8px var(--green-glow);animation:dotPulse 2.2s ease-in-out infinite;}
 
@@ -181,9 +193,67 @@
   .sidebar-footer a{color:var(--text-faint);text-decoration:underline;text-underline-offset:2px;}
   .sidebar-footer a:hover{color:var(--green);}
 
+  /* ── View switching (Dashboard / Problems / Import / Config / Instructions) ── */
+  .view{display:none;}
+  .view.view-active{display:block;animation:panelIn .35s cubic-bezier(.22,1,.36,1) both;}
+
+  /* ── Instructions view: premium step cards ── */
+  .setup-progress{
+    margin-bottom:26px;padding:20px 26px;
+    background:linear-gradient(155deg, var(--panel-2), var(--panel));
+    border:1px solid var(--border);border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);overflow-x:auto;
+  }
+  .setup-progress-track{display:flex;align-items:flex-start;gap:0;min-width:520px;}
+  .setup-progress-step{display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;width:64px;}
+  .setup-progress-dot{
+    width:34px;height:34px;border-radius:50%;flex-shrink:0;
+    background:var(--green-dim);border:1.5px solid var(--border-strong);color:var(--green);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:12px;
+    box-shadow:0 0 18px -4px var(--green-glow);
+  }
+  .setup-progress-tick{font-size:9.5px;color:var(--text-faint);text-align:center;font-family:'Space Grotesk',sans-serif;letter-spacing:0.02em;line-height:1.3;}
+  .setup-progress-line{flex:1;height:2px;margin-top:17px;background:linear-gradient(90deg, var(--green-2), rgba(114,255,69,0.15));min-width:16px;}
+
+  .instruction-cards{display:flex;flex-direction:column;gap:16px;}
+  .instruction-card{
+    display:grid;grid-template-columns:64px 1fr;gap:22px;align-items:start;
+    background:linear-gradient(160deg, var(--panel-2), var(--panel));
+    border:1px solid var(--border);border-radius:var(--radius-lg);
+    padding:26px 28px;box-shadow:var(--shadow-card);
+    position:relative;overflow:hidden;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .instruction-card::after{
+    content:'';position:absolute;top:-30%;right:-15%;width:180px;height:180px;border-radius:50%;
+    background:radial-gradient(circle, var(--green-glow), transparent 70%);opacity:0.4;pointer-events:none;
+  }
+  .instruction-card:hover{transform:translateY(-2px);border-color:var(--border-strong);box-shadow:0 24px 60px -20px rgba(0,0,0,0.6), 0 0 32px -12px var(--green-glow);}
+  .instruction-num{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:30px;color:var(--green-2);
+    line-height:1;text-shadow:0 0 22px var(--green-glow);
+  }
+  .instruction-title{
+    font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:var(--text);
+    margin:0 0 10px;letter-spacing:-0.01em;
+  }
+  .instruction-text{font-size:13px;color:var(--text-dim);line-height:1.7;margin:0;}
+  .instruction-text code{color:var(--green);font-family:'JetBrains Mono',monospace;font-size:12.5px;}
+  .instruction-text a{color:var(--green);text-decoration:none;border-bottom:1px solid rgba(140,255,80,0.35);}
+  .instruction-text a:hover{border-bottom-color:var(--green);}
+  .instruction-text b{color:var(--text);font-weight:600;}
+  .instruction-cta{
+    display:inline-flex;align-items:center;gap:6px;margin-top:14px;
+    font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;color:#0b1406;
+    background:linear-gradient(135deg, var(--green), var(--green-2));
+    padding:9px 16px;border-radius:999px;text-decoration:none;
+    box-shadow:0 8px 20px -8px var(--green-glow);transition:box-shadow .18s, transform .1s;
+  }
+  .instruction-cta:hover{box-shadow:0 10px 26px -6px var(--green-glow), 0 0 0 1px rgba(140,255,80,0.3);transform:translateY(-1px);}
+
   /* Setup guide */
-  #guidePanel{display:none;}
-  #guidePanel.open{display:block;}
+  #guidePanel{display:block;}
   .steps{list-style:none;counter-reset:step;margin:0;padding:0;}
   .steps li{
     counter-increment:step;
@@ -240,8 +310,7 @@
   .sidebar .panel-body{padding:14px;}
 
   /* Config panel */
-  #configPanel{display:none;}
-  #configPanel.open{display:block;}
+  #configPanel{display:block;}
   .field-row{display:flex;gap:12px;margin-bottom:12px;}
   .field{flex:1;display:flex;flex-direction:column;gap:6px;}
   .field label{font-size:10.5px;color:var(--text-dim);letter-spacing:0.04em;font-family:'Space Grotesk',sans-serif;font-weight:500;}
@@ -328,8 +397,7 @@
     font-family:'Space Grotesk',sans-serif;
   }
   .import-link:hover{color:var(--green);border-bottom-color:var(--green);}
-  #importPanel{display:none;}
-  #importPanel.open{display:block;}
+  #importPanel{display:block;}
   .field textarea{
     background:rgba(0,0,0,0.22);border:1px solid var(--border);color:var(--text);
     font-family:'JetBrains Mono',monospace;font-size:13px;
@@ -454,6 +522,11 @@
     .nav-item.active::before{display:none;}
     .sidebar-section-label{display:none;}
     .sidebar-footer{display:none;}
+    .brand{margin-bottom:16px;}
+    .site-logo{width:52px;height:52px;}
+    .brand h1{font-size:20px;}
+    .setup-progress-track{min-width:0;}
+    .instruction-card{grid-template-columns:44px 1fr;gap:14px;padding:20px;}
     .main{padding:18px 14px 48px;}
     .dash-header{flex-direction:column;align-items:flex-start;gap:14px;}
     .stat-grid{grid-template-columns:1fr 1fr;}
@@ -496,6 +569,13 @@
   .dash-title{
     font-family:'Space Grotesk',sans-serif;font-size:28px;font-weight:700;
     margin:0 0 4px;letter-spacing:-0.02em;color:var(--text);
+    position:relative;
+  }
+  .dash-title::after{
+    content:'';position:absolute;left:-20px;top:50%;width:180px;height:70px;
+    transform:translateY(-50%);
+    background:radial-gradient(ellipse, rgba(140,255,74,0.08), transparent 70%);
+    pointer-events:none;z-index:-1;
   }
   .dash-sub{margin:0;color:var(--text-dim);font-size:12.5px;font-family:'Space Grotesk',sans-serif;}
   .dash-header-actions{display:flex;align-items:center;gap:12px;flex-shrink:0;}
@@ -509,6 +589,7 @@
   .btn-sync:hover{color:var(--green);border-color:var(--border-strong);box-shadow:0 0 20px -8px var(--green-glow);}
   .btn-sync .sync-icon{display:inline-block;transition:transform .5s ease;}
   .btn-sync.syncing .sync-icon{animation:spin .8s linear infinite;}
+  .btn-sync.synced{color:var(--green);border-color:rgba(168,239,75,0.4);background:var(--green-dim);}
 
   /* ── Stat cards ── */
   .stat-grid{
@@ -519,6 +600,12 @@
     border:1px solid var(--border);border-radius:var(--radius-lg);
     padding:20px 22px;box-shadow:var(--shadow-card);
     position:relative;overflow:hidden;
+    transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .stat-card:hover{
+    transform:translateY(-2px);
+    border-color:rgba(140,255,74,0.28);
+    box-shadow:0 14px 40px rgba(0,0,0,0.35), 0 0 24px -14px var(--green-glow);
   }
   .stat-card::after{
     content:'';position:absolute;top:-40%;right:-30%;width:140px;height:140px;border-radius:50%;
@@ -542,6 +629,12 @@
     background:linear-gradient(155deg, var(--panel-2), var(--panel));
     border:1px solid var(--border);border-radius:var(--radius-lg);
     padding:24px;box-shadow:var(--shadow-card);
+    transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .progress-card:hover, .activity-card:hover{
+    transform:translateY(-2px);
+    border-color:rgba(140,255,74,0.28);
+    box-shadow:0 14px 40px rgba(0,0,0,0.35), 0 0 24px -14px var(--green-glow);
   }
   .card-title{
     font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:700;color:var(--text);
@@ -582,6 +675,66 @@
   .heat-legend{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text-faint);font-family:'Space Grotesk',sans-serif;}
   .heat-legend .heat-cell{width:9px;height:9px;}
 
+  .heat-grid-wrap{position:relative;flex:1;display:flex;margin-bottom:12px;}
+  .heat-grid-wrap .heat-grid{margin-bottom:0;}
+  .heat-empty{
+    display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;pointer-events:none;
+  }
+  .heat-empty.show{display:flex;}
+  .heat-empty-title{font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:600;color:var(--text-dim);}
+  .heat-empty-sub{font-size:10.5px;color:var(--text-faint);margin-top:4px;}
+
+  .progress-ring.empty{animation:ringPulse 2.4s ease-in-out infinite;}
+  @keyframes ringPulse{
+    0%,100%{box-shadow:0 0 40px -10px var(--green-glow);}
+    50%{box-shadow:0 0 24px -10px var(--green-glow);}
+  }
+
+  /* ── Stats page ── */
+  .stats-bars{display:flex;flex-direction:column;gap:12px;}
+  .stats-bar-row{display:flex;align-items:center;gap:12px;}
+  .stats-bar-day{
+    width:78px;flex-shrink:0;font-family:'Space Grotesk',sans-serif;font-size:12px;
+    color:var(--text-dim);
+  }
+  .stats-bar-track{flex:1;height:10px;border-radius:999px;background:rgba(255,255,255,0.05);overflow:hidden;}
+  .stats-bar-fill{
+    height:100%;border-radius:999px;
+    background:linear-gradient(90deg, var(--green-2), var(--lime));
+    box-shadow:0 0 10px -2px var(--green-glow);
+    transition:width .5s cubic-bezier(.22,1,.36,1);
+  }
+  .stats-bar-count{
+    width:26px;flex-shrink:0;text-align:right;font-family:'Space Grotesk',sans-serif;
+    font-size:12px;font-weight:600;color:var(--text);
+  }
+  .stats-bars-empty{color:var(--text-faint);font-size:12px;font-family:'Space Grotesk',sans-serif;}
+
+  .streak-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .streak-box{
+    background:rgba(255,255,255,0.02);border:1px solid var(--border-soft);
+    border-radius:var(--radius-md);padding:18px 12px;text-align:center;
+  }
+  .streak-emoji{font-size:20px;line-height:1;margin-bottom:6px;}
+  .streak-value{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:var(--text);}
+  .streak-label{font-size:10.5px;color:var(--text-faint);margin-top:4px;font-family:'Space Grotesk',sans-serif;text-transform:uppercase;letter-spacing:0.08em;}
+
+  .stats-chart-svg{display:block;width:100%;height:auto;}
+  .stats-chart-line{fill:none;stroke:var(--green);stroke-width:2;}
+  .stats-chart-area{fill:url(#statsLineGradient);opacity:0.5;}
+  .stats-chart-dot{fill:var(--bg-raise);stroke:var(--green);stroke-width:2;}
+  .stats-chart-grid{stroke:var(--border-soft);stroke-width:1;}
+  .stats-chart-label{font-family:'JetBrains Mono',monospace;font-size:9px;fill:var(--text-faint);}
+  .stats-chart-bar{fill:var(--green-dim);stroke:var(--border);stroke-width:1;transition:fill .15s ease;}
+  .stats-chart-bar:hover{fill:var(--green-2);}
+  .stats-chart-bar-label{font-family:'Space Grotesk',sans-serif;font-size:9.5px;fill:var(--text-faint);}
+  .stats-chart-bar-value{font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;fill:var(--text);}
+
+  @media (max-width:900px){
+    .streak-row{grid-template-columns:1fr;}
+  }
+
   /* ── Visual polish / animations ── */
   @keyframes panelIn{
     from{opacity:0;transform:translateY(10px);}
@@ -598,37 +751,46 @@
   .main > .panel:nth-of-type(2){animation-delay:.26s;}
   .main > .panel:nth-of-type(3){animation-delay:.30s;}
 
-  #configPanel, #guidePanel, #importPanel{
-    display:block !important;
-    overflow:hidden;
-    max-height:0;
-    opacity:0;
-    transition:max-height .38s cubic-bezier(.22,1,.36,1), opacity .25s ease, margin-bottom .38s ease;
-    margin-bottom:0;
-    pointer-events:none;
-  }
-  #configPanel.open, #guidePanel.open, #importPanel.open{
-    max-height:1400px;
-    opacity:1;
-    margin-bottom:20px;
-    pointer-events:auto;
-  }
-
   #storageNotice, #storageWarning{
     display:block !important;
     overflow:hidden;
     max-height:0;
     opacity:0;
-    transition:max-height .4s cubic-bezier(.22,1,.36,1), opacity .3s ease;
+    border-color:transparent !important;
+    transition:max-height .4s cubic-bezier(.22,1,.36,1), opacity .3s ease, border-color .3s ease;
     pointer-events:none;
     margin-bottom:0;
   }
-  #storageNotice.visible, #storageWarning.visible{
+  #storageWarning.visible{
     max-height:400px;
+    opacity:1;
+    border-color:var(--red) !important;
+    pointer-events:auto;
+    margin-bottom:20px;
+  }
+  #storageNotice.visible{
+    max-height:800px;
     opacity:1;
     pointer-events:auto;
     margin-bottom:20px;
   }
+
+  /* "Using multiple devices?" — collapsed by default, expands on click */
+  .storage-notice-toggle{
+    background:none;border:none;padding:0;margin:0;cursor:pointer;
+    color:var(--green);font:inherit;font-size:12.5px;line-height:1.6;text-align:left;
+    display:inline-flex;align-items:center;gap:6px;
+  }
+  .storage-notice-toggle b{color:var(--text);}
+  .storage-notice-toggle:hover{text-decoration:underline;text-underline-offset:2px;}
+  .storage-notice-chevron{font-size:10px;transition:transform .2s ease;display:inline-block;}
+  .storage-notice-toggle.open .storage-notice-chevron{transform:rotate(180deg);}
+  .storage-notice-detail{
+    overflow:hidden;max-height:0;opacity:0;
+    transition:max-height .35s cubic-bezier(.22,1,.36,1), opacity .25s ease, margin-top .35s ease;
+    margin-top:0;
+  }
+  .storage-notice-detail.open{max-height:400px;opacity:1;margin-top:8px;}
 
   @keyframes rowIn{
     from{opacity:0;transform:translateX(-8px);}
@@ -692,71 +854,60 @@
     <div class="brand">
       <div class="brand-top">
         <img class="site-logo" src="data:image/png;base64,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" alt="geetlit logo">
-        <div class="prompt">~/leetcode-log</div>
       </div>
       <h1>geetlit<span class="caret"></span></h1>
+      <div class="prompt">~/leetcode-log</div>
       <p>set up once — after that, add a number and it syncs to GitHub by itself.</p>
       <div class="brand-desc">Pushes a small <code>.md</code> file per entry — number, date, time — to your repo, so it shows up as a commit on your profile. Can't push solution code, doesn't touch anything else in your account. <span style="color:var(--green);">Just saves you the manual copy-paste of a commit each time you solve one.</span></div>
     </div>
 
     <nav class="sidebar-nav">
       <div class="sidebar-section-label">Menu</div>
-      <a href="#dashboardTop" class="nav-item active" data-nav="dashboard">
+      <button type="button" class="nav-item active" data-view="dashboard">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"></rect><rect x="14" y="3" width="7" height="5" rx="1.5"></rect><rect x="14" y="12" width="7" height="9" rx="1.5"></rect><rect x="3" y="16" width="7" height="5" rx="1.5"></rect></svg>
         Dashboard
-      </a>
-      <a href="#problemsSection" class="nav-item" data-nav="problems">
+      </button>
+      <button type="button" class="nav-item" data-view="problems">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
         Problems
-      </a>
-      <button type="button" class="nav-item" id="navImport" data-nav="import">
+      </button>
+      <button type="button" class="nav-item" id="navImport" data-view="import">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
         Import
       </button>
+      <button type="button" class="nav-item" data-view="stats">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+        Stats
+      </button>
 
       <div class="sidebar-section-label">Setup</div>
-      <button type="button" class="cfg-btn nav-item" id="cfgToggle" data-nav="config">
+      <button type="button" class="cfg-btn nav-item" id="cfgToggle" data-view="config">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-        <span class="cfg-dot-static">GitHub</span>
+        <span class="cfg-dot-static">GitHub Configuration</span>
         <span class="cfg-dot" id="cfgDot"></span>
       </button>
-      <button type="button" class="cfg-btn nav-item" id="guideToggle" data-nav="guide">
+      <button type="button" class="cfg-btn nav-item" id="guideToggle" data-view="guide">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-        Guide
+        Instructions
       </button>
     </nav>
 
-    <div class="panel" id="guidePanel">
-      <div class="panel-head"><span class="label">Set up GitHub in 6 steps</span></div>
-      <div class="panel-body">
-        <ol class="steps">
-          <li>
-            <span class="step-title">Open the token creation page</span>
-            <span class="step-body">Click <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">github.com/settings/personal-access-tokens/new →</a> (also linked next to the token field below). Sign in if asked.</span>
-          </li>
-          <li>
-            <span class="step-title">Name it and set an expiration</span>
-            <span class="step-body">Give it something recognizable like <code>geetlit</code>. Pick any expiration — 90 days is a safe default; you can generate a new one later.</span>
-          </li>
-          <li>
-            <span class="step-title">Limit repository access</span>
-            <span class="step-body">Under "Repository access," choose <b>Only select repositories</b>, then pick the one repo you want problems pushed to. Avoid "All repositories."</span>
-          </li>
-          <li>
-            <span class="step-title">Grant the Contents permission</span>
-            <span class="step-body">Scroll to "Permissions" → <b>Repository permissions</b>. Find <b>Contents</b> in the list and set it to <b>Read and write</b>. This is the only permission this tool needs — leave everything else on "No access." GitHub will auto-add "Metadata: Read-only" for you; that's expected.</span>
-          </li>
-          <li>
-            <span class="step-title">Generate and copy the token</span>
-            <span class="step-body">Click <b>Generate token</b> at the bottom. Copy the value shown — it starts with <code>github_pat_</code> — you won't be able to see it again after leaving the page.</span>
-          </li>
-          <li>
-            <span class="step-title">Paste it in here and verify</span>
-            <span class="step-body">Open <b>config</b> above, fill in owner, repo, and this token, then click <b>verify &amp; save</b>. A green "Connected to owner/repo" message means you're ready to push.</span>
-          </li>
-        </ol>
+    <div class="sidebar-footer">
+      <div class="conn-status" id="sidebarConn">
+        <span class="conn-dot"></span>
+        <span class="conn-label">Not connected</span>
+      </div>
+      <div class="footer-text">
+        entries live in your browser · everyday solves push one .md file each · past problems can be imported in one batch<br>
+        made by SAKET SAURABH · <a href="https://www.linkedin.com/in/saket-saurabh-012956291/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
       </div>
     </div>
+  </aside>
+
+  <main class="main">
+
+  <!-- ══════════════ DASHBOARD VIEW ══════════════ -->
+  <section class="view view-active" id="view-dashboard" data-view="dashboard">
 
     <div class="panel" id="storageWarning" style="display:none;border-color:var(--red);">
       <div class="panel-body" style="padding:14px 18px;color:var(--red);font-size:12.5px;line-height:1.6;">
@@ -764,17 +915,272 @@
       </div>
     </div>
 
-    <div class="panel" id="storageNotice" style="display:none;border-color:var(--amber);">
-      <div class="panel-body" style="padding:14px 18px;color:var(--amber);font-size:12.5px;line-height:1.6;">
-        Entries and config are saved to <b>this browser's local storage</b> — they'll stay put on this device and browser, but won't follow you to another device or browser until you sync via the config panel.
+    <div class="panel" id="storageNotice" style="display:none;">
+      <div class="panel-body" style="padding:14px 18px;color:var(--text-dim);font-size:12.5px;line-height:1.6;">
+        Entries and config are saved to <b style="color:var(--text);">this browser's local storage</b> — they'll stay put on this device and browser, but won't follow you to another device or browser until you sync via the config panel.
         <br><br>
-        <b>Using multiple devices?</b> Here's what you should know:
-        <ul style="margin:6px 0 0 0;padding-left:18px;line-height:1.8;">
-          <li><b>Same PAT on all devices</b> — This is the recommended setup. All your devices push solves to the same GitHub repo, so everything stays in sync automatically in one place.</li>
-          <li><b>Different PAT on each device</b> — This still works as long as all PATs point to the same GitHub repo (same owner + repo). The PAT is just a password; the repo is the single source of truth.</li>
-          <li><b>Different repos on different devices</b> — Your solves will be split across multiple repos. They won't merge on their own — avoid this unless you have a reason.</li>
-          <li>The <b>local storage on each device is separate</b> — even if you're syncing to the same repo, your config (owner, repo, PAT) must be set up individually on every device/browser you use.</li>
-        </ul>
+        <button type="button" class="storage-notice-toggle" id="multiDeviceToggle">
+          <b>Using multiple devices?</b>&nbsp;Click here to know more
+          <span class="storage-notice-chevron">▾</span>
+        </button>
+        <div class="storage-notice-detail" id="multiDeviceDetail">
+          <ul style="margin:6px 0 0 0;padding-left:18px;line-height:1.8;">
+            <li><b style="color:var(--text);">Same PAT on all devices</b> — This is the recommended setup. All your devices push solves to the same GitHub repo, so everything stays in sync automatically in one place.</li>
+            <li><b style="color:var(--text);">Different PAT on each device</b> — This still works as long as all PATs point to the same GitHub repo (same owner + repo). The PAT is just a password; the repo is the single source of truth.</li>
+            <li><b style="color:var(--text);">Different repos on different devices</b> — Your solves will be split across multiple repos. They won't merge on their own — avoid this unless you have a reason.</li>
+            <li>The <b style="color:var(--text);">local storage on each device is separate</b> — even if you're syncing to the same repo, your config (owner, repo, PAT) must be set up individually on every device/browser you use.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="dash-header">
+      <div>
+        <h2 class="dash-title">Dashboard</h2>
+        <p class="dash-sub">Track your LeetCode progress</p>
+      </div>
+      <div class="dash-header-actions">
+        <div class="conn-status" id="headerConn">
+          <span class="conn-dot"></span>
+          <span class="conn-label">Not connected</span>
+        </div>
+        <button type="button" class="btn-sync" id="headerSyncBtn" title="Check GitHub for new entries and pull them in">
+          <span class="sync-icon">↻</span> <span class="sync-label" id="headerSyncLabel">Sync</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total problems</div>
+        <div class="stat-value" id="statTotal">0</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">Today</div>
+        <div class="stat-value" id="statToday">0</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">Synced</div>
+        <div class="stat-value" id="statSynced">0</div>
+      </div>
+      <div class="stat-card warn">
+        <div class="stat-label">Pending</div>
+        <div class="stat-value" id="statPending">0</div>
+      </div>
+    </div>
+
+    <div class="dash-row">
+      <div class="progress-card">
+        <div class="card-title">LeetCode progress</div>
+        <div class="progress-ring" id="progressRing" style="--pct:0;">
+          <div class="progress-ring-inner">
+            <div class="progress-ring-value" id="progressPct">0%</div>
+            <div class="progress-ring-unit">Synced</div>
+          </div>
+        </div>
+        <div class="progress-label" id="progressLabel">0 of 0 synced</div>
+      </div>
+      <div class="activity-card">
+        <div class="card-title">Weekly activity</div>
+        <div class="heat-grid-wrap">
+          <div class="heat-grid" id="activityGrid"></div>
+          <div class="heat-empty" id="activityEmpty">
+            <div class="heat-empty-title">No activity yet</div>
+            <div class="heat-empty-sub">Start solving to build your streak</div>
+          </div>
+        </div>
+        <div class="heat-legend">
+          less
+          <span class="heat-cell level-0"></span>
+          <span class="heat-cell level-1"></span>
+          <span class="heat-cell level-2"></span>
+          <span class="heat-cell level-3"></span>
+          <span class="heat-cell level-4"></span>
+          more
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ STATS VIEW ══════════════ -->
+  <section class="view" id="view-stats" data-view="stats">
+    <div class="dash-header">
+      <div>
+        <h2 class="dash-title">Statistics</h2>
+        <p class="dash-sub">Your LeetCode activity over time</p>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total</div>
+        <div class="stat-value" id="statsTotal">0</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">This week</div>
+        <div class="stat-value" id="statsWeek">0</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">This month</div>
+        <div class="stat-value" id="statsMonth">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Avg / day</div>
+        <div class="stat-value" id="statsAvg">0</div>
+      </div>
+    </div>
+
+    <div class="activity-card" style="margin-bottom:18px;">
+      <div class="card-title">Problems solved — last 14 days</div>
+      <div id="statsLineChartWrap"></div>
+    </div>
+
+    <div class="dash-row">
+      <div class="progress-card">
+        <div class="card-title">Sync status</div>
+        <div class="progress-ring" id="statsSyncRing" style="--pct:0;">
+          <div class="progress-ring-inner">
+            <div class="progress-ring-value" id="statsSyncPct">0%</div>
+            <div class="progress-ring-unit">Synced</div>
+          </div>
+        </div>
+        <div class="progress-label" id="statsSyncLabel">0 of 0 synced</div>
+      </div>
+      <div class="activity-card">
+        <div class="card-title">Daily activity — last 7 days</div>
+        <div id="statsBarChartWrap"></div>
+      </div>
+    </div>
+
+    <div class="dash-row">
+      <div class="activity-card">
+        <div class="card-title">Most productive days</div>
+        <div id="statsProductiveDays" class="stats-bars"></div>
+      </div>
+      <div class="activity-card">
+        <div class="card-title">Streaks</div>
+        <div class="streak-row">
+          <div class="streak-box">
+            <div class="streak-emoji">🔥</div>
+            <div class="streak-value" id="statsCurrentStreak">0</div>
+            <div class="streak-label">Current streak</div>
+          </div>
+          <div class="streak-box">
+            <div class="streak-emoji">🏆</div>
+            <div class="streak-value" id="statsLongestStreak">0</div>
+            <div class="streak-label">Longest streak</div>
+          </div>
+        </div>
+        <div class="card-title" style="margin-top:20px;">Last 30 days</div>
+        <div class="heat-grid" id="statsLast30"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ PROBLEMS VIEW ══════════════ -->
+  <section class="view" id="view-problems" data-view="problems">
+    <div class="dash-header">
+      <div>
+        <h2 class="dash-title">Problems</h2>
+        <p class="dash-sub">Log a solve or browse everything you've tracked so far</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><span class="label">Add problem</span></div>
+      <div class="panel-body">
+        <div class="add-row">
+          <div class="field" style="flex:1.6;">
+            <label>title</label>
+            <input type="text" id="inTitle" placeholder="problem title" autocomplete="off">
+          </div>
+          <div class="field num">
+            <label>problem #</label>
+            <input type="number" id="inNumber" placeholder="1234" min="1">
+          </div>
+          <div class="field">
+            <label>date</label>
+            <input type="date" id="inDate">
+          </div>
+          <div class="field">
+            <label>time</label>
+            <input type="time" id="inTime">
+          </div>
+          <button class="btn btn-primary" id="addBtn">+ Add problem</button>
+        </div>
+        <div class="dup-warn" id="dupWarn">
+          <span id="dupWarnText"></span>
+          <div class="dup-actions">
+            <button class="dup-proceed" id="dupProceed">log it again anyway</button>
+            <button class="dup-dismiss" id="dupDismiss">cancel</button>
+          </div>
+        </div>
+        <div class="import-link" id="importToggle">already solved problems before finding this? import them in bulk →</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <span class="label">Log</span>
+        <span class="log-meta" id="logMeta"></span>
+      </div>
+      <div class="search-wrap" id="searchWrap" style="display:none;">
+        <input type="number" id="searchInput" placeholder="search by problem # — press / to focus" min="1" autocomplete="off">
+        <span class="search-count" id="searchCount"></span>
+        <button class="clear-search" id="clearSearch" title="clear search">×</button>
+      </div>
+      <div id="logList"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════ IMPORT VIEW ══════════════ -->
+  <section class="view" id="view-import" data-view="import">
+    <div class="dash-header">
+      <div>
+        <h2 class="dash-title">Import</h2>
+        <p class="dash-sub">Already solved problems before finding this? Bring them in as a batch</p>
+      </div>
+    </div>
+
+    <div class="panel" id="importPanel">
+      <div class="panel-head"><span class="label">Import past problems</span></div>
+      <div class="panel-body">
+        <div class="field">
+          <label>problem numbers — separated by commas, spaces, or new lines</label>
+          <textarea id="importList" rows="4" placeholder="1, 42, 88&#10;217&#10;300&#10;705"></textarea>
+        </div>
+        <div class="field-row" style="margin-top:12px;">
+          <div class="field">
+            <label>date to record for all of these</label>
+            <input type="date" id="importDate">
+          </div>
+          <div class="field">
+            <label>time</label>
+            <input type="time" id="importTime">
+          </div>
+        </div>
+        <div class="import-mode">
+          <label><input type="radio" name="importMode" id="modeSingle" value="single" checked> one combined file, one commit — <span style="color:var(--text-faint);">fast</span></label>
+          <label><input type="radio" name="importMode" id="modeSeparate" value="separate"> separate file + commit per problem</label>
+        </div>
+        <div class="note" id="importNote">
+          <b>Single file:</b> pushes one <code>.md</code> file listing every number below in a single commit — fast, but shows up as just one commit on your profile. Good for a quick one-time backfill.
+        </div>
+        <div class="verify-msg" id="importMsg"></div>
+        <div class="config-actions">
+          <button class="btn btn-primary" id="importBtn">import &amp; push all</button>
+          <button class="btn btn-ghost" id="importCancel">cancel</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ GITHUB CONFIGURATION VIEW ══════════════ -->
+  <section class="view" id="view-config" data-view="config">
+    <div class="dash-header">
+      <div>
+        <h2 class="dash-title">GitHub Configuration</h2>
+        <p class="dash-sub">Connect geetlit to the repo it should push your solves to</p>
       </div>
     </div>
 
@@ -836,161 +1242,85 @@
         </div>
       </div>
     </div>
+  </section>
 
-    <div class="sidebar-footer">
-      <div class="conn-status" id="sidebarConn">
-        <span class="conn-dot"></span>
-        <span class="conn-label">Not connected</span>
+  <!-- ══════════════ INSTRUCTIONS VIEW ══════════════ -->
+  <section class="view" id="view-guide" data-view="guide">
+    <div class="dash-header">
+      <div>
+        <h2 class="dash-title">Instructions</h2>
+        <p class="dash-sub">Set up geetlit and connect it to GitHub</p>
       </div>
-      <div class="footer-text">
-        entries live in your browser · everyday solves push one .md file each · past problems can be imported in one batch<br>
-        made by SAKET SAURABH · <a href="https://www.linkedin.com/in/saket-saurabh-012956291/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+    </div>
+
+    <div class="setup-progress">
+      <div class="setup-progress-track">
+        <div class="setup-progress-step"><div class="setup-progress-dot">01</div><div class="setup-progress-tick">Token page</div></div>
+        <div class="setup-progress-line"></div>
+        <div class="setup-progress-step"><div class="setup-progress-dot">02</div><div class="setup-progress-tick">Name &amp; expiry</div></div>
+        <div class="setup-progress-line"></div>
+        <div class="setup-progress-step"><div class="setup-progress-dot">03</div><div class="setup-progress-tick">Repo access</div></div>
+        <div class="setup-progress-line"></div>
+        <div class="setup-progress-step"><div class="setup-progress-dot">04</div><div class="setup-progress-tick">Contents perm</div></div>
+        <div class="setup-progress-line"></div>
+        <div class="setup-progress-step"><div class="setup-progress-dot">05</div><div class="setup-progress-tick">Generate</div></div>
+        <div class="setup-progress-line"></div>
+        <div class="setup-progress-step"><div class="setup-progress-dot">06</div><div class="setup-progress-tick">Verify</div></div>
       </div>
     </div>
-  </aside>
 
-  <main class="main">
-
-  <div id="dashboardTop"></div>
-  <div class="dash-header">
-    <div>
-      <h2 class="dash-title">Dashboard</h2>
-      <p class="dash-sub">Track your LeetCode progress</p>
-    </div>
-    <div class="dash-header-actions">
-      <div class="conn-status" id="headerConn">
-        <span class="conn-dot"></span>
-        <span class="conn-label">Not connected</span>
-      </div>
-      <button type="button" class="btn-sync" id="headerSyncBtn" title="Check GitHub for new entries and pull them in">
-        <span class="sync-icon">↻</span> Sync
-      </button>
-    </div>
-  </div>
-
-  <div class="stat-grid">
-    <div class="stat-card">
-      <div class="stat-label">Total problems</div>
-      <div class="stat-value" id="statTotal">0</div>
-    </div>
-    <div class="stat-card accent">
-      <div class="stat-label">Today</div>
-      <div class="stat-value" id="statToday">0</div>
-    </div>
-    <div class="stat-card accent">
-      <div class="stat-label">Synced</div>
-      <div class="stat-value" id="statSynced">0</div>
-    </div>
-    <div class="stat-card warn">
-      <div class="stat-label">Pending</div>
-      <div class="stat-value" id="statPending">0</div>
-    </div>
-  </div>
-
-  <div class="dash-row">
-    <div class="progress-card">
-      <div class="card-title">LeetCode progress</div>
-      <div class="progress-ring" id="progressRing" style="--pct:0;">
-        <div class="progress-ring-inner">
-          <div class="progress-ring-value" id="progressPct">0%</div>
-          <div class="progress-ring-unit">Synced</div>
+    <div class="instruction-cards">
+      <div class="instruction-card">
+        <div class="instruction-num">01</div>
+        <div class="instruction-body">
+          <h3 class="instruction-title">Open the token creation page</h3>
+          <p class="instruction-text">Click <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">github.com/settings/personal-access-tokens/new →</a> (also linked next to the token field in Configuration). Sign in if asked.</p>
+          <a class="instruction-cta" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener noreferrer">→ Open GitHub</a>
         </div>
       </div>
-      <div class="progress-label" id="progressLabel">0 of 0 synced</div>
-    </div>
-    <div class="activity-card">
-      <div class="card-title">Weekly activity</div>
-      <div class="heat-grid" id="activityGrid"></div>
-      <div class="heat-legend">
-        less
-        <span class="heat-cell level-0"></span>
-        <span class="heat-cell level-1"></span>
-        <span class="heat-cell level-2"></span>
-        <span class="heat-cell level-3"></span>
-        <span class="heat-cell level-4"></span>
-        more
-      </div>
-    </div>
-  </div>
 
-  <div class="panel">
-    <div class="panel-head"><span class="label">Add problem</span></div>
-    <div class="panel-body">
-      <div class="add-row">
-        <div class="field" style="flex:1.6;">
-          <label>title</label>
-          <input type="text" id="inTitle" placeholder="problem title" autocomplete="off">
-        </div>
-        <div class="field num">
-          <label>problem #</label>
-          <input type="number" id="inNumber" placeholder="1234" min="1">
-        </div>
-        <div class="field">
-          <label>date</label>
-          <input type="date" id="inDate">
-        </div>
-        <div class="field">
-          <label>time</label>
-          <input type="time" id="inTime">
-        </div>
-        <button class="btn btn-primary" id="addBtn">+ Add problem</button>
-      </div>
-      <div class="dup-warn" id="dupWarn">
-        <span id="dupWarnText"></span>
-        <div class="dup-actions">
-          <button class="dup-proceed" id="dupProceed">log it again anyway</button>
-          <button class="dup-dismiss" id="dupDismiss">cancel</button>
+      <div class="instruction-card">
+        <div class="instruction-num">02</div>
+        <div class="instruction-body">
+          <h3 class="instruction-title">Name it and set an expiration</h3>
+          <p class="instruction-text">Give it something recognizable like <code>geetlit</code>. Pick any expiration — 90 days is a safe default; you can generate a new one later.</p>
         </div>
       </div>
-      <div class="import-link" id="importToggle">already solved problems before finding this? import them in bulk →</div>
-    </div>
-  </div>
 
-  <div class="panel" id="importPanel">
-    <div class="panel-head"><span class="label">Import past problems</span></div>
-    <div class="panel-body">
-      <div class="field">
-        <label>problem numbers — separated by commas, spaces, or new lines</label>
-        <textarea id="importList" rows="4" placeholder="1, 42, 88&#10;217&#10;300&#10;705"></textarea>
-      </div>
-      <div class="field-row" style="margin-top:12px;">
-        <div class="field">
-          <label>date to record for all of these</label>
-          <input type="date" id="importDate">
-        </div>
-        <div class="field">
-          <label>time</label>
-          <input type="time" id="importTime">
+      <div class="instruction-card">
+        <div class="instruction-num">03</div>
+        <div class="instruction-body">
+          <h3 class="instruction-title">Limit repository access</h3>
+          <p class="instruction-text">Under "Repository access," choose <b>Only select repositories</b>, then pick the one repo you want problems pushed to. Avoid "All repositories."</p>
         </div>
       </div>
-      <div class="import-mode">
-        <label><input type="radio" name="importMode" id="modeSingle" value="single" checked> one combined file, one commit — <span style="color:var(--text-faint);">fast</span></label>
-        <label><input type="radio" name="importMode" id="modeSeparate" value="separate"> separate file + commit per problem</label>
-      </div>
-      <div class="note" id="importNote">
-        <b>Single file:</b> pushes one <code>.md</code> file listing every number below in a single commit — fast, but shows up as just one commit on your profile. Good for a quick one-time backfill.
-      </div>
-      <div class="verify-msg" id="importMsg"></div>
-      <div class="config-actions">
-        <button class="btn btn-primary" id="importBtn">import &amp; push all</button>
-        <button class="btn btn-ghost" id="importCancel">cancel</button>
-      </div>
-    </div>
-  </div>
 
-  <div id="problemsSection"></div>
-  <div class="panel">
-    <div class="panel-head">
-      <span class="label">Log</span>
-      <span class="log-meta" id="logMeta"></span>
+      <div class="instruction-card">
+        <div class="instruction-num">04</div>
+        <div class="instruction-body">
+          <h3 class="instruction-title">Grant the Contents permission</h3>
+          <p class="instruction-text">Scroll to "Permissions" → <b>Repository permissions</b>. Find <b>Contents</b> in the list and set it to <b>Read and write</b>. This is the only permission this tool needs — leave everything else on "No access." GitHub will auto-add "Metadata: Read-only" for you; that's expected.</p>
+        </div>
+      </div>
+
+      <div class="instruction-card">
+        <div class="instruction-num">05</div>
+        <div class="instruction-body">
+          <h3 class="instruction-title">Generate and copy the token</h3>
+          <p class="instruction-text">Click <b>Generate token</b> at the bottom. Copy the value shown — it starts with <code>github_pat_</code> — you won't be able to see it again after leaving the page.</p>
+        </div>
+      </div>
+
+      <div class="instruction-card">
+        <div class="instruction-num">06</div>
+        <div class="instruction-body">
+          <h3 class="instruction-title">Paste it in here and verify</h3>
+          <p class="instruction-text">Open <b>config</b>, fill in owner, repo, and this token, then click <b>verify &amp; save</b>. A green "Connected to owner/repo" message means you're ready to push.</p>
+          <a class="instruction-cta" href="#" id="instructionsGoToConfig">→ Open Configuration</a>
+        </div>
+      </div>
     </div>
-    <div class="search-wrap" id="searchWrap" style="display:none;">
-      <input type="number" id="searchInput" placeholder="search by problem # — press / to focus" min="1" autocomplete="off">
-      <span class="search-count" id="searchCount"></span>
-      <button class="clear-search" id="clearSearch" title="clear search">×</button>
-    </div>
-    <div id="logList"></div>
-  </div>
+  </section>
 
   </main>
 </div>
@@ -1774,13 +2104,12 @@ $('clearSearch').addEventListener('click', ()=>{
 });
 
 $('importToggle').addEventListener('click', ()=>{
-  $('importPanel').classList.add('open');
-  $('importPanel').scrollIntoView({behavior:'smooth', block:'nearest'});
+  showView('import');
 });
 $('importCancel').addEventListener('click', ()=>{
-  $('importPanel').classList.remove('open');
   $('importMsg').textContent = '';
   $('importMsg').className = 'verify-msg';
+  showView('problems');
 });
 $('importBtn').addEventListener('click', pushBulk);
 
@@ -1794,13 +2123,6 @@ function updateImportNote(){
 }
 $('modeSingle').addEventListener('change', updateImportNote);
 $('modeSeparate').addEventListener('change', updateImportNote);
-
-$('cfgToggle').addEventListener('click', ()=>{
-  $('configPanel').classList.toggle('open');
-});
-$('guideToggle').addEventListener('click', ()=>{
-  $('guidePanel').classList.toggle('open');
-});
 
 $('cfgOwner').addEventListener('input', updateUrlPreview);
 $('cfgRepo').addEventListener('input', updateUrlPreview);
@@ -1954,7 +2276,10 @@ function updateDashboardStats(){
 
   const pct = total ? Math.round((syncedCount/total)*100) : 0;
   const ring = document.getElementById('progressRing');
-  if(ring) ring.style.setProperty('--pct', pct);
+  if(ring){
+    ring.style.setProperty('--pct', pct);
+    ring.classList.toggle('empty', total === 0);
+  }
   set('progressPct', pct + '%');
   set('progressLabel', total ? `${syncedCount} of ${total} synced` : 'No problems logged yet');
 }
@@ -1977,6 +2302,207 @@ function renderActivity(){
     html += `<span class="heat-cell level-${level}" title="${key}: ${c} problem${c===1?'':'s'}"></span>`;
   }
   grid.innerHTML = html;
+
+  const emptyEl = document.getElementById('activityEmpty');
+  if(emptyEl) emptyEl.classList.toggle('show', problems.length === 0);
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Stats page — derived entirely from the existing `problems` array
+// (date, time, synced). No new data is stored; everything is computed
+// on render from what's already tracked.
+// ─────────────────────────────────────────────────────────────────────────
+
+function dateKey(d){ return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+
+function buildLineChartSVG(days){
+  // days: array of {key, count}, oldest first
+  const w = 640, h = 170, padL = 8, padR = 8, padT = 14, padB = 22;
+  const innerW = w - padL - padR, innerH = h - padT - padB;
+  const max = Math.max(1, ...days.map(d=>d.count));
+  const stepX = days.length > 1 ? innerW / (days.length - 1) : 0;
+  const pts = days.map((d,i)=>{
+    const x = padL + i * stepX;
+    const y = padT + innerH - (d.count / max) * innerH;
+    return {x,y,...d};
+  });
+  const linePath = pts.map((p,i)=> (i===0?'M':'L') + p.x.toFixed(1) + ' ' + p.y.toFixed(1)).join(' ');
+  const areaPath = linePath + ` L ${pts[pts.length-1].x.toFixed(1)} ${(padT+innerH).toFixed(1)} L ${pts[0].x.toFixed(1)} ${(padT+innerH).toFixed(1)} Z`;
+  const gridLines = [0,0.5,1].map(f=>{
+    const y = padT + innerH * f;
+    return `<line class="stats-chart-grid" x1="${padL}" y1="${y.toFixed(1)}" x2="${w-padR}" y2="${y.toFixed(1)}"></line>`;
+  }).join('');
+  const labelEvery = Math.ceil(days.length / 7);
+  const labels = pts.map((p,i)=> i % labelEvery === 0
+    ? `<text class="stats-chart-label" x="${p.x.toFixed(1)}" y="${h-4}" text-anchor="middle">${p.key.slice(5)}</text>`
+    : '').join('');
+  const dots = pts.map(p=> `<circle class="stats-chart-dot" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3"><title>${p.key}: ${p.count} problem${p.count===1?'':'s'}</title></circle>`).join('');
+  return `<svg class="stats-chart-svg" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="statsLineGradient" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="var(--green)" stop-opacity="0.35"></stop>
+        <stop offset="100%" stop-color="var(--green)" stop-opacity="0"></stop>
+      </linearGradient>
+    </defs>
+    ${gridLines}
+    <path class="stats-chart-area" d="${areaPath}"></path>
+    <path class="stats-chart-line" d="${linePath}"></path>
+    ${dots}
+    ${labels}
+  </svg>`;
+}
+
+function buildBarChartSVG(days){
+  // days: array of {key, label, count}, oldest first (7 entries)
+  const w = 640, h = 170, padL = 10, padR = 10, padT = 20, padB = 26;
+  const innerW = w - padL - padR, innerH = h - padT - padB;
+  const max = Math.max(1, ...days.map(d=>d.count));
+  const gap = 10;
+  const barW = (innerW - gap * (days.length - 1)) / days.length;
+  const bars = days.map((d,i)=>{
+    const x = padL + i * (barW + gap);
+    const barH = (d.count / max) * innerH;
+    const y = padT + innerH - barH;
+    return `<rect class="stats-chart-bar" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(barH,1).toFixed(1)}" rx="4"><title>${d.key}: ${d.count} problem${d.count===1?'':'s'}</title></rect>
+      <text class="stats-chart-bar-value" x="${(x+barW/2).toFixed(1)}" y="${(y-6).toFixed(1)}" text-anchor="middle">${d.count}</text>
+      <text class="stats-chart-bar-label" x="${(x+barW/2).toFixed(1)}" y="${h-6}" text-anchor="middle">${d.label}</text>`;
+  }).join('');
+  return `<svg class="stats-chart-svg" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">${bars}</svg>`;
+}
+
+function renderStats(){
+  const view = document.getElementById('view-stats');
+  if(!view) return;
+
+  const total = problems.length;
+  const today = new Date();
+  const todayKey = dateKey(today);
+
+  // This week (last 7 days incl. today) / this month (calendar month)
+  const weekStart = new Date(today); weekStart.setDate(weekStart.getDate() - 6);
+  const weekStartKey = dateKey(weekStart);
+  const monthPrefix = `${today.getFullYear()}-${pad(today.getMonth()+1)}`;
+  const thisWeek = problems.filter(p=> p.date >= weekStartKey && p.date <= todayKey).length;
+  const thisMonth = problems.filter(p=> p.date && p.date.startsWith(monthPrefix)).length;
+
+  const dates = problems.map(p=>p.date).filter(Boolean).sort();
+  let avgPerDay = 0;
+  if(dates.length){
+    const first = new Date(dates[0]);
+    const spanDays = Math.max(1, Math.round((today - first) / 86400000) + 1);
+    avgPerDay = total / spanDays;
+  }
+
+  const set = (id,val)=>{ const el = document.getElementById(id); if(el) el.textContent = val; };
+  set('statsTotal', total);
+  set('statsWeek', thisWeek);
+  set('statsMonth', thisMonth);
+  set('statsAvg', avgPerDay ? avgPerDay.toFixed(1) : '0');
+
+  // Per-day counts, keyed by date
+  const countsByDate = {};
+  problems.forEach(p=>{ if(p.date) countsByDate[p.date] = (countsByDate[p.date]||0) + 1; });
+
+  // Line chart: last 14 days
+  const last14 = [];
+  for(let i = 13; i >= 0; i--){
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const key = dateKey(d);
+    last14.push({key, count: countsByDate[key] || 0});
+  }
+  const lineWrap = document.getElementById('statsLineChartWrap');
+  if(lineWrap) lineWrap.innerHTML = buildLineChartSVG(last14);
+
+  // Bar chart: last 7 days
+  const WEEKDAY_SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const last7 = [];
+  for(let i = 6; i >= 0; i--){
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    const key = dateKey(d);
+    last7.push({key, label: WEEKDAY_SHORT[d.getDay()], count: countsByDate[key] || 0});
+  }
+  const barWrap = document.getElementById('statsBarChartWrap');
+  if(barWrap) barWrap.innerHTML = buildBarChartSVG(last7);
+
+  // Sync status ring (mirrors dashboard progress ring, own DOM nodes)
+  const syncedCount = problems.filter(p=>p.synced).length;
+  const pct = total ? Math.round((syncedCount/total)*100) : 0;
+  const syncRing = document.getElementById('statsSyncRing');
+  if(syncRing){
+    syncRing.style.setProperty('--pct', pct);
+    syncRing.classList.toggle('empty', total === 0);
+  }
+  set('statsSyncPct', pct + '%');
+  set('statsSyncLabel', total ? `${syncedCount} of ${total} synced` : 'No problems logged yet');
+
+  // Most productive days — aggregate all-time counts by weekday
+  const WEEKDAY_FULL = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const byWeekday = [0,0,0,0,0,0,0];
+  problems.forEach(p=>{
+    if(!p.date) return;
+    const d = new Date(p.date + 'T00:00:00');
+    if(!isNaN(d)) byWeekday[d.getDay()]++;
+  });
+  const productiveEl = document.getElementById('statsProductiveDays');
+  if(productiveEl){
+    if(total === 0){
+      productiveEl.innerHTML = `<div class="stats-bars-empty">No problems logged yet — solve one to see your pattern.</div>`;
+    } else {
+      const order = [1,2,3,4,5,6,0].map(i=>({name:WEEKDAY_FULL[i], count:byWeekday[i]})).sort((a,b)=>b.count-a.count);
+      const maxDay = Math.max(1, ...order.map(o=>o.count));
+      productiveEl.innerHTML = order.map(o=> `
+        <div class="stats-bar-row">
+          <div class="stats-bar-day">${o.name}</div>
+          <div class="stats-bar-track"><div class="stats-bar-fill" style="width:${(o.count/maxDay*100).toFixed(0)}%"></div></div>
+          <div class="stats-bar-count">${o.count}</div>
+        </div>`).join('');
+    }
+  }
+
+  // Streaks — based on distinct solved dates
+  const solvedDates = new Set(dates);
+  let currentStreak = 0;
+  {
+    let cursor = new Date(today);
+    // if nothing solved today yet, streak can still count from yesterday backward
+    if(!solvedDates.has(dateKey(cursor))) cursor.setDate(cursor.getDate() - 1);
+    while(solvedDates.has(dateKey(cursor))){
+      currentStreak++;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+  }
+  let longestStreak = 0;
+  {
+    const sortedDates = [...solvedDates].sort();
+    let run = 0, prev = null;
+    sortedDates.forEach(key=>{
+      if(prev){
+        const prevD = new Date(prev + 'T00:00:00');
+        const curD = new Date(key + 'T00:00:00');
+        const diff = Math.round((curD - prevD) / 86400000);
+        run = diff === 1 ? run + 1 : 1;
+      } else {
+        run = 1;
+      }
+      longestStreak = Math.max(longestStreak, run);
+      prev = key;
+    });
+  }
+  set('statsCurrentStreak', currentStreak);
+  set('statsLongestStreak', longestStreak);
+
+  // Last 30 days dots (reuses .heat-cell styling from the dashboard heatmap)
+  const last30El = document.getElementById('statsLast30');
+  if(last30El){
+    let html = '';
+    for(let i = 29; i >= 0; i--){
+      const d = new Date(today); d.setDate(d.getDate() - i);
+      const key = dateKey(d);
+      const solved = !!countsByDate[key];
+      html += `<span class="heat-cell level-${solved ? 4 : 0}" title="${key}: ${countsByDate[key]||0} problem${(countsByDate[key]||0)===1?'':'s'}"></span>`;
+    }
+    last30El.innerHTML = html;
+  }
 }
 
 function updateConnStatusUI(){
@@ -1994,6 +2520,7 @@ render = function(){
   _coreRender();
   updateDashboardStats();
   renderActivity();
+  renderStats();
 };
 
 const _coreUpdateCfgDot = updateCfgDot;
@@ -2005,6 +2532,7 @@ updateCfgDot = function(){
 // Header "Sync" button — calls the exact same sync function as the config
 // panel's "sync now" button, just exposed at the top of the dashboard too.
 const headerSyncBtn = document.getElementById('headerSyncBtn');
+const headerSyncLabel = document.getElementById('headerSyncLabel');
 if(headerSyncBtn){
   headerSyncBtn.addEventListener('click', async ()=>{
     if(!config.verified){
@@ -2013,34 +2541,63 @@ if(headerSyncBtn){
     }
     headerSyncBtn.classList.add('syncing');
     headerSyncBtn.disabled = true;
+    if(headerSyncLabel) headerSyncLabel.textContent = 'Syncing...';
     try{
       await syncFromGitHub();
+      if(headerSyncLabel) headerSyncLabel.textContent = 'Synced';
+      headerSyncBtn.classList.add('synced');
     } finally {
       headerSyncBtn.classList.remove('syncing');
       headerSyncBtn.disabled = false;
+      setTimeout(()=>{
+        headerSyncBtn.classList.remove('synced');
+        if(headerSyncLabel) headerSyncLabel.textContent = 'Sync';
+      }, 1800);
     }
   });
 }
 
-// Sidebar nav: Import / GitHub / Guide items open their existing panels via
-// the existing toggle buttons/logic — no new open/close logic is introduced.
-const navImportBtn = document.getElementById('navImport');
-if(navImportBtn){
-  navImportBtn.addEventListener('click', ()=>{
-    $('importToggle').click();
-    $('importPanel').scrollIntoView({behavior:'smooth', block:'start'});
+// ── Main-content view switching (Dashboard / Problems / Import / Config / Instructions) ──
+// Frontend-only navigation state: no page reload, no backend calls. Swaps which
+// <section class="view" data-view="..."> is visible and syncs the active sidebar item.
+function showView(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('view-active'));
+  const target = document.getElementById('view-' + view);
+  if(target) target.classList.add('view-active');
+
+  document.querySelectorAll('.nav-item[data-view]').forEach(item=>{
+    item.classList.toggle('active', item.dataset.view === view);
+  });
+
+  if(view === 'stats') renderStats();
+
+  const main = document.querySelector('.main');
+  if(main) main.scrollTo({top:0, behavior:'auto'});
+}
+
+document.querySelectorAll('.nav-item[data-view]').forEach(item=>{
+  item.addEventListener('click', ()=> showView(item.dataset.view));
+});
+
+const instructionsConfigLink = document.getElementById('instructionsGoToConfig');
+if(instructionsConfigLink){
+  instructionsConfigLink.addEventListener('click', (e)=>{
+    e.preventDefault();
+    showView('config');
   });
 }
 
-// Active nav-item highlighting on click (visual only).
-document.querySelectorAll('.nav-item[data-nav]').forEach(item=>{
-  item.addEventListener('click', ()=>{
-    document.querySelectorAll('.nav-item[data-nav]').forEach(i=>i.classList.remove('active'));
-    item.classList.add('active');
+// "Using multiple devices?" — collapsed by default, expands/collapses on click.
+const multiDeviceToggle = document.getElementById('multiDeviceToggle');
+const multiDeviceDetail = document.getElementById('multiDeviceDetail');
+if(multiDeviceToggle && multiDeviceDetail){
+  multiDeviceToggle.addEventListener('click', ()=>{
+    multiDeviceToggle.classList.toggle('open');
+    multiDeviceDetail.classList.toggle('open');
   });
-});
+}
 
-// Keyboard shortcuts: "/" focuses search, "Esc" closes open panels/dup-warn.
+// Keyboard shortcuts: "/" focuses search, "Esc" dismisses the duplicate-entry warning.
 document.addEventListener('keydown', (e)=>{
   const tag = (e.target && e.target.tagName || '').toLowerCase();
   const typing = tag === 'input' || tag === 'textarea';
@@ -2049,10 +2606,6 @@ document.addEventListener('keydown', (e)=>{
     if(search){ e.preventDefault(); search.focus(); }
   }
   if(e.key === 'Escape'){
-    ['configPanel','guidePanel','importPanel'].forEach(id=>{
-      const el = document.getElementById(id);
-      if(el) el.classList.remove('open');
-    });
     hideDupWarn();
   }
 });
@@ -2061,6 +2614,7 @@ document.addEventListener('keydown', (e)=>{
 // this script loaded — harmless to call again, it only reads state).
 updateDashboardStats();
 renderActivity();
+renderStats();
 updateConnStatusUI();
 
 </script>
