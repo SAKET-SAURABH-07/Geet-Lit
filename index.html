@@ -602,11 +602,29 @@
     background:rgba(255,255,255,0.02);border:1px solid var(--border);color:var(--text-dim);
     padding:9px 16px;border-radius:999px;cursor:pointer;
     transition:border-color .18s, color .18s, box-shadow .18s;
+    position:relative;overflow:hidden;
   }
+  .btn-sync .sync-progress{
+    position:absolute;left:0;bottom:0;height:2px;width:0%;
+    background:var(--green);box-shadow:0 0 8px var(--green-glow);
+    transition:width .3s ease;
+    border-radius:0 2px 2px 0;
+  }
+  .btn-sync.syncing .sync-label{min-width:96px;display:inline-block;}
   .btn-sync:hover{color:var(--green);border-color:var(--border-strong);box-shadow:0 0 20px -8px var(--green-glow);}
   .btn-sync .sync-icon{display:inline-block;transition:transform .5s ease;}
   .btn-sync.syncing .sync-icon{animation:spin .8s linear infinite;}
   .btn-sync.synced{color:var(--green);border-color:rgba(0,209,23,0.4);background:var(--green-dim);}
+  /* Red "unsynced" state — shown whenever local problems haven't been pushed yet. */
+  .btn-sync .sync-count{
+    display:none;align-items:center;justify-content:center;
+    min-width:16px;height:16px;padding:0 5px;
+    font-size:10.5px;font-weight:700;line-height:16px;text-align:center;
+    background:var(--red);color:#2a0d0a;border-radius:999px;
+  }
+  .btn-sync.unsynced{color:var(--red);border-color:rgba(240,117,106,0.4);background:var(--red-dim);}
+  .btn-sync.unsynced:hover{color:var(--red);border-color:var(--red);box-shadow:0 0 20px -8px rgba(240,117,106,0.4);}
+  .btn-sync.unsynced .sync-count{display:inline-flex;}
 
   /* ── Stat cards ── */
   .stat-grid{
@@ -967,6 +985,8 @@
         </div>
         <button type="button" class="btn-sync header-sync-btn" title="Push unsynced problems and pull in new ones from GitHub">
           <span class="sync-icon">↻</span> <span class="sync-label">Sync</span>
+          <span class="sync-count"></span>
+          <span class="sync-progress"></span>
         </button>
       </div>
     </div>
@@ -1116,6 +1136,8 @@
         </div>
         <button type="button" class="btn-sync header-sync-btn" title="Push unsynced problems and pull in new ones from GitHub">
           <span class="sync-icon">↻</span> <span class="sync-label">Sync</span>
+          <span class="sync-count"></span>
+          <span class="sync-progress"></span>
         </button>
       </div>
     </div>
@@ -1597,7 +1619,7 @@ async function checkForUpdates(auto){
 // entries carry the same title/date/time that were pushed, keeping both devices'
 // logs identical rather than falling back to commit metadata. Never overwrites or
 // deletes existing local entries. Triggered via "sync now" or the Sync button.
-async function syncFromGitHub(silent){
+async function syncFromGitHub(silent, onProgress){
   if(!config.verified || !config.owner || !config.repo || !config.token){
     if(!silent) showToast('Set up and verify GitHub config first.', 'err');
     return 0;
@@ -1624,7 +1646,9 @@ async function syncFromGitHub(silent){
   try{
     const existingNumbers = new Set(problems.map(p=>p.number));
     let added = 0;
-    for(const file of candidates){
+    for(let i = 0; i < candidates.length; i++){
+      const file = candidates[i];
+      if(onProgress) onProgress(i, candidates.length);
       const number = file.name.replace(/\.md$/,'');
       if(existingNumbers.has(number)) continue; // safety, in case local state changed since the check
 
@@ -1652,6 +1676,7 @@ async function syncFromGitHub(silent){
       });
       existingNumbers.add(number);
       added++;
+      if(onProgress) onProgress(i + 1, candidates.length);
     }
 
     await saveProblems();
@@ -2572,7 +2597,10 @@ function updateConnStatusUI(){
 }
 
 // Shows/refreshes the "N unsynced problems — sync now!" banner (Dashboard + Problems
-// tab). Purely local — reflects `problems` immediately, no network round-trip needed.
+// tab) AND the red "unsynced" state + count badge on the header Sync buttons.
+// Purely local — reflects `problems` immediately, no network round-trip needed.
+// Leaves any button that's mid-sync (or flashing "Synced") alone — the red state
+// only applies to buttons that are otherwise idle.
 function updateUnsyncedBanners(){
   const pendingCount = problems.filter(p=>!p.synced).length;
   document.querySelectorAll('.unsynced-banner').forEach(el=>{
@@ -2584,58 +2612,92 @@ function updateUnsyncedBanners(){
       el.style.display = 'none';
     }
   });
+  document.querySelectorAll('.header-sync-btn').forEach(btn=>{
+    if(btn.classList.contains('syncing') || btn.classList.contains('synced')) return;
+    const countEl = btn.querySelector('.sync-count');
+    if(pendingCount > 0){
+      btn.classList.add('unsynced');
+      if(countEl) countEl.textContent = pendingCount;
+    } else {
+      btn.classList.remove('unsynced');
+      if(countEl) countEl.textContent = '';
+    }
+  });
 }
 
 // Drives every ".header-sync-btn" on the page (Dashboard + Problems tab) through
-// the same idle/syncing/synced states, in lockstep.
-function setSyncButtonsState(state){
+// the same idle/syncing/synced states, in lockstep. `label` optionally overrides
+// the default text (used to show live "Pushing 2/5" / "Pulling 1/3" progress).
+function setSyncButtonsState(state, label){
   document.querySelectorAll('.header-sync-btn').forEach(btn=>{
-    const label = btn.querySelector('.sync-label');
+    const labelEl = btn.querySelector('.sync-label');
     if(state === 'syncing'){
-      btn.classList.remove('synced');
+      btn.classList.remove('synced','unsynced');
       btn.classList.add('syncing');
       btn.disabled = true;
-      if(label) label.textContent = 'Syncing...';
+      if(labelEl) labelEl.textContent = label || 'Syncing...';
     } else if(state === 'synced'){
-      btn.classList.remove('syncing');
+      btn.classList.remove('syncing','unsynced');
       btn.classList.add('synced');
       btn.disabled = false;
-      if(label) label.textContent = 'Synced';
+      if(labelEl) labelEl.textContent = 'Synced';
     } else {
       btn.classList.remove('syncing','synced');
       btn.disabled = false;
-      if(label) label.textContent = 'Sync';
+      if(labelEl) labelEl.textContent = 'Sync';
     }
+  });
+}
+
+// Fills the thin progress bar inside every sync button, 0–100.
+function setSyncProgress(pct){
+  const clamped = Math.max(0, Math.min(100, pct));
+  document.querySelectorAll('.header-sync-btn .sync-progress').forEach(el=>{
+    el.style.width = clamped + '%';
   });
 }
 
 // Two-way sync: pushes every currently-unsynced local problem first (so nothing
 // pending gets left behind), then checks GitHub for anything new and pulls it in
 // (title/date/time included) — so both devices' logs end up identical either way.
+// Reports live progress through setSyncButtonsState()/setSyncProgress() the whole way.
 async function fullSync(){
   if(!config.verified || !config.owner || !config.repo || !config.token){
     showToast('Set up and verify GitHub config first.', 'err');
     return;
   }
 
-  setSyncButtonsState('syncing');
+  setSyncButtonsState('syncing', 'Preparing...');
+  setSyncProgress(0);
 
+  // Push phase — first half of the bar.
   const toPush = problems.filter(p=>!p.synced);
   let pushedCount = 0, pushFailed = 0;
-  for(const p of toPush){
-    const ok = await pushOne(p.id, true);
+  for(let i = 0; i < toPush.length; i++){
+    setSyncButtonsState('syncing', `Pushing ${i+1}/${toPush.length}`);
+    const ok = await pushOne(toPush[i].id, true);
     if(ok) pushedCount++; else pushFailed++;
+    setSyncProgress(((i + 1) / toPush.length) * 50);
   }
+  if(toPush.length === 0) setSyncProgress(50);
 
+  // Pull phase — second half of the bar.
   let pulledCount = 0;
   try{
+    setSyncButtonsState('syncing', 'Checking GitHub...');
     pendingSyncCandidates = null; // force a fresh check — local state just changed
     await checkForUpdates(true);
-    pulledCount = await syncFromGitHub(true);
+    const pullTotal = (pendingSyncCandidates || []).length;
+    if(pullTotal === 0) setSyncProgress(100);
+    pulledCount = await syncFromGitHub(true, (current, total)=>{
+      setSyncButtonsState('syncing', `Pulling ${current}/${total}`);
+      setSyncProgress(50 + (total ? (current / total) : 1) * 50);
+    });
   }catch(e){
     console.error('fullSync: pull step failed', e);
   }
 
+  setSyncProgress(100);
   setSyncButtonsState('synced');
   updateUnsyncedBanners();
 
@@ -2646,7 +2708,10 @@ async function fullSync(){
   const summary = parts.length ? `Sync complete — ${parts.join(', ')}.` : 'Already up to date.';
   showToast(summary, pushFailed ? 'err' : 'ok');
 
-  setTimeout(()=> setSyncButtonsState('idle'), 1800);
+  setTimeout(()=>{
+    setSyncButtonsState('idle');
+    updateUnsyncedBanners(); // reapply the red/count state if anything's still unsynced
+  }, 1800);
 }
 
 // Wrap (don't edit) core functions so the new widgets stay in sync.
