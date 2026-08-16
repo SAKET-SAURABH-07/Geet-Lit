@@ -1580,6 +1580,7 @@ async function checkForUpdates(auto){
     if(res.status === 404){
       pendingSyncCandidates = [];
       setSyncBar('uptodate');
+      updateUnsyncedBanners();
       if(!auto) showToast('No files found at that path yet.', null);
       return;
     }
@@ -1605,10 +1606,12 @@ async function checkForUpdates(auto){
       setSyncBar('found', candidates.length);
       if(!auto) showToast(`${candidates.length} new ${candidates.length===1?'entry':'entries'} found on GitHub.`, null);
     }
+    updateUnsyncedBanners();
   }catch(e){
     console.error('checkForUpdates failed:', e);
     pendingSyncCandidates = null;
     setSyncBar('error', `Check failed: ${e.message}`);
+    updateUnsyncedBanners();
     if(!auto) showToast(`Check failed: ${e.message}`, 'err');
   }
 }
@@ -2598,11 +2601,15 @@ function updateConnStatusUI(){
 
 // Shows/refreshes the "N unsynced problems — sync now!" banner (Dashboard + Problems
 // tab) AND the red "unsynced" state + count badge on the header Sync buttons.
-// Purely local — reflects `problems` immediately, no network round-trip needed.
+// Counts BOTH directions: local entries not yet pushed to GitHub, AND entries
+// already on GitHub (e.g. pushed from another device) that haven't been pulled in
+// yet — so logging in from a second device shows up here too, not just local pushes.
 // Leaves any button that's mid-sync (or flashing "Synced") alone — the red state
 // only applies to buttons that are otherwise idle.
 function updateUnsyncedBanners(){
-  const pendingCount = problems.filter(p=>!p.synced).length;
+  const localUnsynced = problems.filter(p=>!p.synced).length;
+  const remotePending = pendingSyncCandidates ? pendingSyncCandidates.length : 0;
+  const pendingCount = localUnsynced + remotePending;
   document.querySelectorAll('.unsynced-banner').forEach(el=>{
     if(pendingCount > 0){
       el.style.display = 'flex';
