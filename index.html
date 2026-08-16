@@ -529,10 +529,12 @@
   @media (max-width:768px){
     .app{grid-template-columns:1fr;grid-template-rows:auto 1fr;}
     .sidebar{
+      grid-column:1;grid-row:1;
       position:static;height:auto;
       border-right:none;border-bottom:1px solid var(--border-soft);
       padding:18px 16px 14px;
     }
+    .main{grid-column:1;grid-row:2;}
     .sidebar-nav{flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:4px;}
     .nav-item{flex-shrink:0;padding:8px 12px;}
     .nav-item.active::before{display:none;}
