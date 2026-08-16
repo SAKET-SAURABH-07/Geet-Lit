@@ -559,6 +559,86 @@
     .stat-grid{grid-template-columns:1fr;}
   }
 
+  /* ── Extra mobile refinements (additive — desktop/laptop layout untouched) ── */
+  @media (max-width:768px){
+    /* Prevent iOS Safari auto-zoom on focus by keeping form fields at 16px */
+    .field input, .field textarea, .search-wrap input{font-size:16px;}
+    .field.num input{font-size:16px;}
+
+    /* Two-up form rows collapse to one column on phones */
+    .field-row{flex-direction:column;gap:12px;}
+
+    /* Panel headers: allow label + meta/badges to wrap instead of clipping */
+    .panel-head{flex-wrap:wrap;gap:8px;row-gap:6px;padding:14px 16px;}
+    .panel-body{padding:18px 16px;}
+
+    /* Add-problem row: button always full-width and clearly tappable */
+    .add-row{gap:10px;}
+    .add-row .btn{width:100%;padding:12px 20px;}
+
+    /* Search bar wraps cleanly instead of squeezing the input */
+    .search-wrap{flex-wrap:wrap;padding:12px 16px;}
+    .search-wrap input{min-width:0;flex-basis:100%;}
+    .search-count{margin-left:auto;}
+
+    /* Duplicate-entry warning actions stack for easy tapping */
+    .dup-warn .dup-actions{flex-direction:column;}
+    .dup-warn .dup-actions button{width:100%;padding:10px 14px;}
+
+    /* Import mode radio cards stack instead of squeezing side by side */
+    .import-mode{flex-direction:column;}
+
+    /* Primary/ghost action pairs go full-width and stack on narrow screens */
+    .config-actions{flex-wrap:wrap;}
+    .config-actions .btn{flex:1 1 140px;}
+
+    /* Dashboard/section headers: smaller, tighter type on phones */
+    .dash-title{font-size:22px;}
+    .dash-sub{font-size:11.5px;}
+
+    /* Stat + progress + activity cards get comfier padding on small screens */
+    .stat-card{padding:16px 18px;}
+    .stat-value{font-size:26px;}
+    .progress-card, .activity-card{padding:18px;}
+    .progress-ring{width:120px;height:120px;}
+    .progress-ring-value{font-size:22px;}
+
+    /* Config helper text wraps instead of overflowing horizontally */
+    .url-preview, .note, .path-hint, .instruction-text, .step-body{word-break:break-word;}
+
+    /* Header status pills wrap their text instead of forcing horizontal scroll */
+    .conn-status, .unsynced-banner{white-space:normal;text-align:left;}
+
+    /* Sidebar top bar: nicer touch scrolling for the pill nav */
+    .sidebar-nav{-webkit-overflow-scrolling:touch;scrollbar-width:thin;}
+
+    /* Setup/instructions cards get tighter spacing on phones */
+    .setup-progress{padding:16px 18px;}
+    .instruction-num{font-size:24px;}
+    .instruction-title{font-size:14.5px;}
+
+    /* Toasts stay readable and don't touch screen edges */
+    .toast{max-width:calc(100% - 32px);font-size:12px;}
+  }
+
+  @media (max-width:480px){
+    /* Header action buttons (sync, connection pill) get room to breathe */
+    .dash-header-actions{width:100%;}
+    .dash-header-actions .btn-sync, .dash-header-actions .conn-status, .dash-header-actions .unsynced-banner{
+      width:100%;justify-content:center;
+    }
+
+    /* Config/import action buttons go full width for easy tapping */
+    .config-actions{flex-direction:column;}
+    .config-actions .btn{width:100%;flex:unset;}
+
+    .brand h1{font-size:18px;}
+    .site-logo{width:44px;height:44px;}
+    .dash-title{font-size:20px;}
+    .row .num{width:auto;}
+    .row .status{margin-left:auto;}
+  }
+
   /* duplicate warning banner */
   .dup-warn{
     display:none;
@@ -1171,7 +1251,7 @@
             <button class="dup-dismiss" id="dupDismiss">cancel</button>
           </div>
         </div>
-        <div class="import-link" id="importToggle">solved LeetCode problems before geetlit? click here to push them all at once →</div>
+        <div class="import-link" id="importToggle">already solved problems before finding this? import them in bulk →</div>
       </div>
     </div>
 
@@ -1194,7 +1274,7 @@
     <div class="dash-header">
       <div>
         <h2 class="dash-title">Import</h2>
-        <p class="dash-sub">Solved LeetCode problems before geetlit? Push them all at once here</p>
+        <p class="dash-sub">Already solved problems before finding this? Bring them in as a batch</p>
       </div>
     </div>
 
@@ -1580,7 +1660,6 @@ async function checkForUpdates(auto){
     if(res.status === 404){
       pendingSyncCandidates = [];
       setSyncBar('uptodate');
-      updateUnsyncedBanners();
       if(!auto) showToast('No files found at that path yet.', null);
       return;
     }
@@ -1606,12 +1685,10 @@ async function checkForUpdates(auto){
       setSyncBar('found', candidates.length);
       if(!auto) showToast(`${candidates.length} new ${candidates.length===1?'entry':'entries'} found on GitHub.`, null);
     }
-    updateUnsyncedBanners();
   }catch(e){
     console.error('checkForUpdates failed:', e);
     pendingSyncCandidates = null;
     setSyncBar('error', `Check failed: ${e.message}`);
-    updateUnsyncedBanners();
     if(!auto) showToast(`Check failed: ${e.message}`, 'err');
   }
 }
@@ -2601,15 +2678,11 @@ function updateConnStatusUI(){
 
 // Shows/refreshes the "N unsynced problems — sync now!" banner (Dashboard + Problems
 // tab) AND the red "unsynced" state + count badge on the header Sync buttons.
-// Counts BOTH directions: local entries not yet pushed to GitHub, AND entries
-// already on GitHub (e.g. pushed from another device) that haven't been pulled in
-// yet — so logging in from a second device shows up here too, not just local pushes.
+// Purely local — reflects `problems` immediately, no network round-trip needed.
 // Leaves any button that's mid-sync (or flashing "Synced") alone — the red state
 // only applies to buttons that are otherwise idle.
 function updateUnsyncedBanners(){
-  const localUnsynced = problems.filter(p=>!p.synced).length;
-  const remotePending = pendingSyncCandidates ? pendingSyncCandidates.length : 0;
-  const pendingCount = localUnsynced + remotePending;
+  const pendingCount = problems.filter(p=>!p.synced).length;
   document.querySelectorAll('.unsynced-banner').forEach(el=>{
     if(pendingCount > 0){
       el.style.display = 'flex';
