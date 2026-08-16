@@ -393,7 +393,15 @@
 
   <div class="panel" id="storageNotice" style="display:none;border-color:var(--amber);">
     <div class="panel-body" style="padding:14px 18px;color:var(--amber);font-size:12.5px;line-height:1.6;">
-      Entries and config are saved to <b>this browser's local storage</b> — they'll stay put on this device and browser, but won't follow you to another device or browser , until you sync it in the config panel.
+      Entries and config are saved to <b>this browser's local storage</b> — they'll stay put on this device and browser, but won't follow you to another device or browser until you sync via the config panel.
+      <br><br>
+      <b>Using multiple devices?</b> Here's what you should know:
+      <ul style="margin:6px 0 0 0;padding-left:18px;line-height:1.8;">
+        <li><b>Same PAT on all devices</b> — This is the recommended setup. All your devices push solves to the same GitHub repo, so everything stays in sync automatically in one place.</li>
+        <li><b>Different PAT on each device</b> — This still works as long as all PATs point to the same GitHub repo (same owner + repo). The PAT is just a password; the repo is the single source of truth.</li>
+        <li><b>Different repos on different devices</b> — Your solves will be split across multiple repos. They won't merge on their own — avoid this unless you have a reason.</li>
+        <li>The <b>local storage on each device is separate</b> — even if you're syncing to the same repo, your config (owner, repo, PAT) must be set up individually on every device/browser you use.</li>
+      </ul>
     </div>
   </div>
 
